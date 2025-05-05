@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocumentClient, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb'
+import { DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand } from '@aws-sdk/lib-dynamodb'
 import { awsConfig } from '../config/aws'
 import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity'
 import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-identity'
@@ -41,19 +41,15 @@ const getClient = () => {
   return DynamoDBDocumentClient.from(client)
 }
 
-export const investmentService = {
-  async addInvestment(userId: string, investment: any) {
+export const userService = {
+  async createOrUpdateUser(userId: string, email: string) {
     const docClient = getClient()
-    // 获取当前用户的邮箱
-    const user = JSON.parse(localStorage.getItem('user') || '{}')
     const params = {
-      TableName: 'Investments',
+      TableName: awsConfig.dynamoDB.usersTableName,
       Item: {
         userId,
-        investmentId: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        email: user.email,
-        ...investment,
-        createdAt: new Date().toISOString(),
+        email,
+        updatedAt: new Date().toISOString(),
       },
     }
 
@@ -61,47 +57,26 @@ export const investmentService = {
     return params.Item
   },
 
-  async getUserInvestments(userId: string) {
+  async getUser(userId: string) {
     const docClient = getClient()
     const params = {
-      TableName: 'Investments',
-      KeyConditionExpression: 'userId = :userId',
-      ExpressionAttributeValues: {
-        ':userId': userId,
+      TableName: awsConfig.dynamoDB.usersTableName,
+      Key: {
+        userId,
       },
     }
 
-    const result = await docClient.send(new QueryCommand(params))
-    return result.Items || []
+    const result = await docClient.send(new GetCommand(params))
+    return result.Item
   },
 
-  async getAllUsersInvestments() {
+  async getAllUsers() {
     const docClient = getClient()
     const params = {
-      TableName: 'Investments',
+      TableName: awsConfig.dynamoDB.usersTableName,
     }
 
     const result = await docClient.send(new ScanCommand(params))
     return result.Items || []
-  },
-
-  calculateUserPerformance(investments: any[]) {
-    const totalInvestment = investments.reduce(
-      (sum, inv) => sum + inv.purchasePrice * inv.quantity,
-      0
-    )
-    const currentValue = investments.reduce(
-      (sum, inv) => sum + inv.currentPrice * inv.quantity,
-      0
-    )
-    const profitLoss = currentValue - totalInvestment
-    const profitLossPercentage = (profitLoss / totalInvestment) * 100
-
-    return {
-      totalInvestment,
-      currentValue,
-      profitLoss,
-      profitLossPercentage,
-    }
   },
 } 

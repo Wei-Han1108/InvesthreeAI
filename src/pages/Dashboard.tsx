@@ -7,10 +7,18 @@ import { stockSearchService } from '../services/stockSearchService'
 
 const Dashboard = () => {
   const investments = useInvestmentStore((state) => state.investments)
+  const loadInvestments = useInvestmentStore((state) => state.loadInvestments)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+
+  // 加载投资数据
+  useEffect(() => {
+    loadInvestments().catch(error => {
+      console.error('Failed to load investments:', error)
+    })
+  }, [loadInvestments])
 
   const totalInvestment = investments.reduce(
     (sum, inv) => sum + inv.purchasePrice * inv.quantity,

@@ -28,10 +28,9 @@ const useInvestmentStore = create<InvestmentStore>((set) => ({
       const user = await authService.getCurrentUser()
       if (!user) throw new Error('User not authenticated')
       
-      const newInvestment = await investmentService.addInvestment(user.getUsername(), investment)
-      set((state) => ({
-        investments: [...state.investments, newInvestment],
-      }))
+      await investmentService.addInvestment(user.getUsername(), investment)
+      const investments = await investmentService.getUserInvestments(user.getUsername())
+      set({ investments: investments as Investment[] })
     } catch (error) {
       console.error('Failed to add investment:', error)
       throw error

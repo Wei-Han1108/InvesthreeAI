@@ -2,6 +2,7 @@ import { CognitoUserPool, CognitoUser, AuthenticationDetails, CognitoUserAttribu
 import { awsConfig } from '../config/aws'
 import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity'
 import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-identity'
+import { userService } from './userService'
 
 const userPool = new CognitoUserPool({
   UserPoolId: awsConfig.userPoolId,
@@ -94,6 +95,27 @@ export const authService = {
             await configureAWSCredentials(idToken)
             // Store the ID token for later use
             localStorage.setItem('idToken', idToken)
+            console.log('ID Token stored:', idToken)
+
+            // 获取用户属性
+            const attributes = await new Promise((resolve, reject) => {
+              cognitoUser.getUserAttributes((err, result) => {
+                if (err) {
+                  reject(err)
+                  return
+                }
+                resolve(result)
+              })
+            })
+
+            const email = attributes?.find(attr => attr.getName() === 'email')?.getValue()
+            if (email) {
+              // 创建或更新用户信息
+              await userService.createOrUpdateUser(cognitoUser.getUsername(), email)
+              // 存储用户信息到localStorage
+              localStorage.setItem('user', JSON.stringify({ email, username: cognitoUser.getUsername() }))
+            }
+
             resolve(result)
           } catch (error) {
             console.error('Error configuring AWS credentials:', error)
@@ -112,6 +134,7 @@ export const authService = {
     const cognitoUser = userPool.getCurrentUser()
     if (cognitoUser) {
       cognitoUser.signOut()
+      localStorage.removeItem('idToken')
     }
   },
 
@@ -130,6 +153,12 @@ export const authService = {
           return
         }
         console.log('GetCurrentUser Success:', session)
+        // 确保存储最新的idToken
+        if (session && session.getIdToken()) {
+          const idToken = session.getIdToken().getJwtToken()
+          localStorage.setItem('idToken', idToken)
+          console.log('Updated ID Token:', idToken)
+        }
         resolve(cognitoUser)
       })
     })

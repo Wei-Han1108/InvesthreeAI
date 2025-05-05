@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { investmentService } from '../services/investmentService'
+import { useNavigate } from 'react-router-dom'
 
 interface UserRanking {
   userId: string
-  username: string
+  email: string
   profitLossPercentage: number
   totalInvestment: number
   currentValue: number
@@ -12,6 +13,8 @@ interface UserRanking {
 const Ranking = () => {
   const [rankings, setRankings] = useState<UserRanking[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchRankings = async () => {
@@ -30,30 +33,47 @@ const Ranking = () => {
         // 计算每个用户的性能
         const userRankings = Object.entries(userInvestments).map(([userId, investments]) => {
           const performance = investmentService.calculateUserPerformance(investments)
+          // 从第一个投资记录中获取用户信息
+          const userInfo = investments[0]
           return {
             userId,
-            username: investments[0].username || '匿名用户',
+            email: userInfo?.email || '匿名用户',
             ...performance,
           }
         })
 
-        // 按盈利率排序
+        // 按盈利率排序，只取前10名
         userRankings.sort((a, b) => b.profitLossPercentage - a.profitLossPercentage)
-        setRankings(userRankings)
+        const topRankings = userRankings.slice(0, 10)
+        setRankings(topRankings)
       } catch (error) {
         console.error('获取排行榜数据失败:', error)
+        if (error instanceof Error && error.message.includes('ID token not found')) {
+          // 如果token不存在，跳转到登录页
+          navigate('/login')
+        } else {
+          setError('获取排行榜数据失败，请稍后重试')
+        }
       } finally {
         setLoading(false)
       }
     }
 
     fetchRankings()
-  }, [])
+  }, [navigate])
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-red-600">{error}</div>
       </div>
     )
   }
@@ -72,7 +92,7 @@ const Ranking = () => {
                   排名
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  用户名
+                  邮箱
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   总投资
@@ -91,7 +111,7 @@ const Ranking = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-lg font-bold">{index + 1}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{ranking.username}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{ranking.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     ¥{ranking.totalInvestment.toLocaleString()}
                   </td>

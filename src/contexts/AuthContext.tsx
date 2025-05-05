@@ -1,13 +1,15 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { authService } from '../services/authService'
 
 interface User {
   email: string
+  username: string
 }
 
 interface AuthContextType {
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string) => Promise<void>
+  signIn: (username: string, password: string) => Promise<void>
+  signUp: (username: string, email: string, password: string) => Promise<void>
   signOut: () => void
   loading: boolean
   user: User | null
@@ -22,21 +24,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for existing user session on mount
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    const checkSession = async () => {
+      try {
+        const cognitoUser = await authService.getCurrentUser()
+        if (cognitoUser) {
+          const attributes = await new Promise((resolve, reject) => {
+            cognitoUser.getUserAttributes((err, result) => {
+              if (err) {
+                reject(err)
+                return
+              }
+              resolve(result)
+            })
+          })
+          
+          const email = attributes?.find(attr => attr.getName() === 'email')?.getValue()
+          if (email) {
+            setUser({ email, username: cognitoUser.getUsername() })
+          }
+        }
+      } catch (error) {
+        console.error('Error checking session:', error)
+        localStorage.removeItem('idToken')
+        localStorage.removeItem('user')
+      }
     }
+
+    checkSession()
   }, [])
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (username: string, password: string) => {
     setLoading(true)
     try {
-      // TODO: Implement actual authentication logic here
-      // For now, we'll simulate a successful login
-      const user = { email }
-      setUser(user)
-      localStorage.setItem('user', JSON.stringify(user))
-      navigate('/')
+      const result = await authService.signIn(username, password)
+      const cognitoUser = await authService.getCurrentUser()
+      if (cognitoUser) {
+        const attributes = await new Promise((resolve, reject) => {
+          cognitoUser.getUserAttributes((err, result) => {
+            if (err) {
+              reject(err)
+              return
+            }
+            resolve(result)
+          })
+        })
+        
+        const email = attributes?.find(attr => attr.getName() === 'email')?.getValue()
+        if (email) {
+          const user = { email, username: cognitoUser.getUsername() }
+          setUser(user)
+          localStorage.setItem('user', JSON.stringify(user))
+          navigate('/')
+        }
+      }
     } catch (error) {
       throw error
     } finally {
@@ -44,15 +84,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (username: string, email: string, password: string) => {
     setLoading(true)
     try {
-      // TODO: Implement actual sign up logic here
-      // For now, we'll simulate a successful registration
-      const user = { email }
-      setUser(user)
-      localStorage.setItem('user', JSON.stringify(user))
-      navigate('/')
+      await authService.signUp(username, email, password)
+      navigate('/confirm-signup', { state: { username } })
     } catch (error) {
       throw error
     } finally {
@@ -60,10 +96,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const signOut = () => {
-    setUser(null)
-    localStorage.removeItem('user')
-    navigate('/login')
+  const signOut = async () => {
+    try {
+      await authService.signOut()
+      setUser(null)
+      localStorage.removeItem('user')
+      localStorage.removeItem('idToken')
+      navigate('/login')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   return (

@@ -8,5 +8,6 @@ export const awsConfig = {
   dynamoDB: {
     tableName: import.meta.env.VITE_DYNAMODB_TABLE_NAME || 'StockInvestments',
     watchlistTableName: import.meta.env.VITE_DYNAMODB_WATCHLIST_TABLE_NAME || 'Watchlist',
+    usersTableName: import.meta.env.VITE_DYNAMODB_USERS_TABLE_NAME || 'Users',
   },
 } 
