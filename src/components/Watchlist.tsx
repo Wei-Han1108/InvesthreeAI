@@ -27,17 +27,20 @@ ChartJS.register(
 )
 
 const Watchlist = () => {
-  const { watchlist, removeFromWatchlist, updateStockPrices } = useWatchlistStore()
+  const { watchlist, removeFromWatchlist, updateStockPrices, loadWatchlist } = useWatchlistStore()
   const [historicalData, setHistoricalData] = useState<Record<string, any[]>>({})
 
   useEffect(() => {
+    // 加载观察列表数据
+    loadWatchlist()
+    
     // 初始加载数据
     updateStockPrices()
     
     // 每60秒更新一次价格
     const interval = setInterval(updateStockPrices, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [loadWatchlist, updateStockPrices])
 
   // 为每个股票获取历史数据
   useEffect(() => {

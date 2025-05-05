@@ -4,7 +4,7 @@ import { PutCommand, QueryCommand, DeleteCommand, UpdateCommand } from '@aws-sdk
 
 export interface WatchlistItem {
   userId: string
-  symbol: string
+  stockTicker: string
   name: string
   price: number
   change: number
@@ -13,28 +13,37 @@ export interface WatchlistItem {
 }
 
 export const watchlistService = {
-  async addItem(userId: string, item: Omit<WatchlistItem, 'userId' | 'timestamp'>) {
+  async addItem(userId: string, item: { symbol: string; name: string; price: number; change: number; changePercent: number }) {
     const docClient = getClient()
     const params = {
-      TableName: awsConfig.dynamoDB.watchlistTableName,
+      TableName: 'Watchlist',
       Item: {
         userId,
-        ...item,
+        stockTicker: item.symbol,
+        name: item.name,
+        price: item.price,
+        change: item.change,
+        changePercent: item.changePercent,
         timestamp: Date.now(),
       },
     }
 
-    await docClient.send(new PutCommand(params))
-    return params.Item
+    try {
+      await docClient.send(new PutCommand(params))
+      return params.Item
+    } catch (error) {
+      console.error('Error adding item to watchlist:', error)
+      throw error
+    }
   },
 
   async removeItem(userId: string, symbol: string) {
     const docClient = getClient()
     const params = {
-      TableName: awsConfig.dynamoDB.watchlistTableName,
+      TableName: 'Watchlist',
       Key: {
         userId,
-        symbol,
+        stockTicker: symbol,
       },
     }
 
@@ -52,10 +61,10 @@ export const watchlistService = {
     )
 
     const params = {
-      TableName: awsConfig.dynamoDB.watchlistTableName,
+      TableName: 'Watchlist',
       Key: {
         userId,
-        symbol,
+        stockTicker: symbol,
       },
       UpdateExpression: `SET ${updateExpression}`,
       ExpressionAttributeValues: expressionAttributeValues,
@@ -67,7 +76,7 @@ export const watchlistService = {
   async getWatchlist(userId: string) {
     const docClient = getClient()
     const params = {
-      TableName: awsConfig.dynamoDB.watchlistTableName,
+      TableName: 'Watchlist',
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
         ':userId': userId,
