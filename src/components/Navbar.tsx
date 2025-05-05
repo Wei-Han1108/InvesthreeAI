@@ -22,6 +22,9 @@ function Navbar() {
             <Link to="/ranking" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
               Ranking
             </Link>
+            <Link to="/ask-ai" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
+              Ask AI
+            </Link>
           </div>
           <div className="flex items-center">
             <button

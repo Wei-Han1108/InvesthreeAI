@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Portfolio from './pages/Portfolio'
 import AddInvestment from './pages/AddInvestment'
 import Ranking from './pages/Ranking'
+import AskAIPage from './pages/AskAI'
 import Navbar from './components/Navbar'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
@@ -42,6 +43,12 @@ function AppRoutes() {
             path="/ranking"
             element={
               isAuthenticated ? <Ranking /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="/ask-ai"
+            element={
+              isAuthenticated ? <AskAIPage /> : <Navigate to="/login" />
             }
           />
         </Routes>
