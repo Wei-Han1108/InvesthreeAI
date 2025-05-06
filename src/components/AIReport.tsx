@@ -11,23 +11,46 @@ interface NewsItem {
   summary: string
 }
 
+interface TechnicalIndicators {
+  sma: {
+    value: number
+    signal: 'bullish' | 'bearish' | 'neutral'
+    price: number
+  }
+  ema: {
+    value: number
+    signal: 'bullish' | 'bearish' | 'neutral'
+    price: number
+  }
+  rsi: {
+    value: number
+    signal: 'overbought' | 'oversold' | 'neutral'
+  }
+  macd: {
+    value: number
+    signal: 'bullish' | 'bearish' | 'neutral'
+  }
+}
+
 interface NewsAnalysis {
   titles: Array<{
     title: string
     url: string
   }>
   advice: string
+  technicalAnalysis?: string
 }
 
 interface CachedData {
   news: NewsItem[]
   analysis: NewsAnalysis
+  technicalIndicators?: TechnicalIndicators
   timestamp: number
 }
 
 const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY
 const NEWS_API_KEY = '4a44dc5b6b314553a0aed659bacdec3b'
-const CACHE_DURATION = 1000 * 60 * 60 // 1小时的缓存时间
+const CACHE_DURATION = 1000 * 5 // 5秒的缓存时间，用于测试
 const REPORT_QUEUE_KEY = 'stock_report_queue'
 const REPORT_STORAGE_KEY = 'stock_reports'
 
@@ -103,7 +126,176 @@ const fetchNews = async (symbol: string): Promise<NewsItem[]> => {
   }
 }
 
-const analyzeNews = async (news: NewsItem[]): Promise<NewsAnalysis> => {
+const fetchTechnicalIndicators = async (symbol: string): Promise<TechnicalIndicators> => {
+  try {
+    // 获取 SMA (Simple Moving Average)
+    const smaUrl = `https://financialmodelingprep.com/api/v3/technical_indicator/1day/${symbol}?period=20&type=sma&apikey=${FMP_API_KEY}`
+    const smaRes = await fetch(smaUrl)
+    const smaData = await smaRes.json()
+
+    // 获取 EMA (Exponential Moving Average)
+    const emaUrl = `https://financialmodelingprep.com/api/v3/technical_indicator/1day/${symbol}?period=20&type=ema&apikey=${FMP_API_KEY}`
+    const emaRes = await fetch(emaUrl)
+    const emaData = await emaRes.json()
+
+    // 获取 RSI (Relative Strength Index)
+    const rsiUrl = `https://financialmodelingprep.com/api/v3/technical_indicator/1day/${symbol}?period=14&type=rsi&apikey=${FMP_API_KEY}`
+    const rsiRes = await fetch(rsiUrl)
+    const rsiData = await rsiRes.json()
+
+    // 获取 MACD (Moving Average Convergence Divergence)
+    const macdUrl = `https://financialmodelingprep.com/api/v3/technical_indicator/1day/${symbol}?type=macd&apikey=${FMP_API_KEY}`
+    const macdRes = await fetch(macdUrl)
+    const macdData = await macdRes.json()
+
+    // 分析指标信号
+    const getSMASignal = (sma: number, price: number) => {
+      if (price > sma) return 'bullish'
+      if (price < sma) return 'bearish'
+      return 'neutral'
+    }
+
+    const getEMASignal = (ema: number, price: number) => {
+      if (price > ema) return 'bullish'
+      if (price < ema) return 'bearish'
+      return 'neutral'
+    }
+
+    const getRSISignal = (rsi: number) => {
+      if (rsi > 70) return 'overbought'
+      if (rsi < 30) return 'oversold'
+      return 'neutral'
+    }
+
+    const getMACDSignal = (macd: number, signal: number) => {
+      if (macd > signal) return 'bullish'
+      if (macd < signal) return 'bearish'
+      return 'neutral'
+    }
+
+    const latestSMA = smaData[0]?.sma || 0
+    const latestEMA = emaData[0]?.ema || 0
+    const latestRSI = rsiData[0]?.rsi || 0
+    const latestMACD = macdData[0]?.macd || 0
+    const latestSignal = macdData[0]?.signal || 0
+    const latestPrice = smaData[0]?.close || 0
+
+    // 打印原始数据
+    console.log('=== Technical Indicators Raw Data ===')
+    console.log('SMA Data:', smaData[0])
+    console.log('EMA Data:', emaData[0])
+    console.log('RSI Data:', rsiData[0])
+    console.log('MACD Data:', macdData[0])
+    console.log('Latest Price:', latestPrice)
+
+    const indicators: TechnicalIndicators = {
+      sma: {
+        value: latestSMA,
+        signal: getSMASignal(latestSMA, latestPrice) as 'bullish' | 'bearish' | 'neutral',
+        price: latestPrice
+      },
+      ema: {
+        value: latestEMA,
+        signal: getEMASignal(latestEMA, latestPrice) as 'bullish' | 'bearish' | 'neutral',
+        price: latestPrice
+      },
+      rsi: {
+        value: latestRSI,
+        signal: getRSISignal(latestRSI) as 'overbought' | 'oversold' | 'neutral'
+      },
+      macd: {
+        value: latestMACD,
+        signal: getMACDSignal(latestMACD, latestSignal) as 'bullish' | 'bearish' | 'neutral'
+      }
+    }
+
+    // 打印处理后的指标数据
+    console.log('=== Processed Technical Indicators ===')
+    console.log('SMA:', {
+      value: indicators.sma.value.toFixed(2),
+      signal: indicators.sma.signal,
+      price: latestPrice.toFixed(2)
+    })
+    console.log('EMA:', {
+      value: indicators.ema.value.toFixed(2),
+      signal: indicators.ema.signal,
+      price: latestPrice.toFixed(2)
+    })
+    console.log('RSI:', {
+      value: indicators.rsi.value.toFixed(2),
+      signal: indicators.rsi.signal
+    })
+    console.log('MACD:', {
+      value: indicators.macd.value.toFixed(2),
+      signal: indicators.macd.signal,
+      signalLine: latestSignal.toFixed(2)
+    })
+
+    return indicators
+  } catch (error) {
+    console.error('Error fetching technical indicators:', error)
+    throw error
+  }
+}
+
+const analyzeTechnicalIndicators = (indicators: TechnicalIndicators): string => {
+  const signals = []
+  
+  // SMA 分析
+  signals.push(`【SMA(20) 分析】
+- 当前值: ${indicators.sma.value.toFixed(2)}
+- 当前价格: ${indicators.sma.price.toFixed(2)}
+- 信号: ${indicators.sma.signal === 'bullish' ? '看涨' : indicators.sma.signal === 'bearish' ? '看跌' : '中性'}
+
+SMA(20)是20日简单移动平均线，反映中期价格趋势：
+- 计算：取最近20个交易日的收盘价之和除以20
+- 趋势判断：价格>SMA为上升趋势，价格<SMA为下降趋势
+- 交易信号：价格突破SMA可视为趋势转变信号`)
+
+  // EMA 分析
+  signals.push(`【EMA(20) 分析】
+- 当前值: ${indicators.ema.value.toFixed(2)}
+- 当前价格: ${indicators.ema.price.toFixed(2)}
+- 信号: ${indicators.ema.signal === 'bullish' ? '看涨' : indicators.ema.signal === 'bearish' ? '看跌' : '中性'}
+
+EMA(20)是20日指数移动平均线，相比SMA对近期价格变化更敏感：
+- 计算：赋予近期价格更高权重，平滑处理历史数据
+- 趋势判断：价格>EMA为上升趋势，价格<EMA为下降趋势
+- 与SMA差异：EMA反应更快，但可能产生更多假信号`)
+
+  // RSI 分析
+  signals.push(`【RSI(14) 分析】
+- 当前值: ${indicators.rsi.value.toFixed(2)}
+- 信号: ${indicators.rsi.signal === 'overbought' ? '超买' : indicators.rsi.signal === 'oversold' ? '超卖' : '中性'}
+
+RSI(14)是14日相对强弱指标，衡量价格动量：
+- 计算：RSI = 100 - (100 / (1 + RS))，其中RS = 平均上涨幅度/平均下跌幅度
+- 区间解读：
+  * >70：超买区域，可能回调
+  * <30：超卖区域，可能反弹
+  * 30-70：中性区域，趋势延续
+- 交易信号：超买/超卖区域可作为反向交易参考`)
+
+  // MACD 分析
+  signals.push(`【MACD 分析】
+- MACD值: ${indicators.macd.value.toFixed(2)}
+- 信号: ${indicators.macd.signal === 'bullish' ? '看涨' : indicators.macd.signal === 'bearish' ? '看跌' : '中性'}
+
+MACD是移动平均线趋势指标：
+- 计算：
+  * MACD线 = EMA(12) - EMA(26)
+  * 信号线 = MACD的9日EMA
+  * 柱状图 = MACD线 - 信号线
+- 交易信号：
+  * 柱状图由负转正：可能上涨
+  * 柱状图由正转负：可能下跌
+  * MACD线上穿信号线：买入信号
+  * MACD线下穿信号线：卖出信号`)
+
+  return signals.join('\n\n')
+}
+
+const analyzeNews = async (news: NewsItem[], technicalIndicators?: TechnicalIndicators): Promise<NewsAnalysis> => {
   try {
     // 只取前5条新闻
     const topNews = news.slice(0, 5)
@@ -113,7 +305,12 @@ const analyzeNews = async (news: NewsItem[]): Promise<NewsAnalysis> => {
     }))
     const summaries = topNews.map(item => item.summary)
     
-    const prompt = `Please analyze the following news and provide investment advice (total length should not exceed 200 words):
+    let technicalAnalysis = ''
+    if (technicalIndicators) {
+      technicalAnalysis = analyzeTechnicalIndicators(technicalIndicators)
+    }
+    
+    const prompt = `Please analyze the following news and technical indicators, then provide investment advice (total length should not exceed 200 words):
 
 News Titles:
 ${titles.map(t => t.title).join('\n')}
@@ -121,12 +318,18 @@ ${titles.map(t => t.title).join('\n')}
 News Summaries:
 ${summaries.join('\n')}
 
+${technicalAnalysis ? `Technical Analysis:
+${technicalAnalysis}` : ''}
+
 Please respond in the following format:
 【News Summary】
 (Brief summary of key points)
 
+【Technical Analysis】
+(If available, brief analysis of technical indicators)
+
 【Investment Advice】
-(Specific advice based on news analysis)`
+(Specific advice based on news and technical analysis)`
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -139,7 +342,7 @@ Please respond in the following format:
         messages: [
           {
             role: "system",
-            content: "You are a professional financial analyst who excels at extracting key information from news and providing investment advice. Please maintain objectivity and professionalism in your analysis, and include risk warnings."
+            content: "You are a professional financial analyst who excels at extracting key information from news and technical indicators to provide investment advice. Please maintain objectivity and professionalism in your analysis, and include risk warnings."
           },
           {
             role: "user",
@@ -153,7 +356,8 @@ Please respond in the following format:
     const data = await response.json()
     return {
       titles,
-      advice: data.choices[0].message.content
+      advice: data.choices[0].message.content,
+      technicalAnalysis
     }
   } catch (error) {
     console.error('Error analyzing news:', error)
@@ -162,7 +366,8 @@ Please respond in the following format:
         title: item.title,
         url: item.url
       })),
-      advice: "Unable to generate analysis. Please try again later."
+      advice: "Unable to generate analysis. Please try again later.",
+      technicalAnalysis: technicalIndicators ? analyzeTechnicalIndicators(technicalIndicators) : undefined
     }
   }
 }
@@ -216,13 +421,15 @@ const AIReport = () => {
 
       try {
         const newsData = await fetchNews(symbol)
-        const analysis = await analyzeNews(newsData)
+        const technicalIndicators = await fetchTechnicalIndicators(symbol)
+        const analysis = await analyzeNews(newsData, technicalIndicators)
         
         // 更新缓存
         const now = Date.now()
         cache.set(symbol, {
           news: newsData,
           analysis,
+          technicalIndicators,
           timestamp: now
         })
 
