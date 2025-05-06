@@ -2,6 +2,26 @@ import { useState, useEffect } from 'react'
 import useInvestmentStore from '../store/investmentStore'
 import useWatchlistStore from '../store/watchlistStore'
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { Radar } from 'react-chartjs-2'
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+// 注册 Chart.js 组件
+ChartJS.register(
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+)
 
 interface NewsItem {
   title: string
@@ -38,6 +58,7 @@ interface NewsAnalysis {
     url: string
   }>
   advice: string
+  technicalIndicators?: TechnicalIndicators
   technicalAnalysis?: string
 }
 
@@ -46,6 +67,14 @@ interface CachedData {
   analysis: NewsAnalysis
   technicalIndicators?: TechnicalIndicators
   timestamp: number
+}
+
+interface StockScore {
+  trendStrength: number
+  momentumStrength: number
+  macdStrength: number
+  priceStrength: number
+  volatility: number
 }
 
 const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY
@@ -357,7 +386,8 @@ Please respond in the following format:
     return {
       titles,
       advice: data.choices[0].message.content,
-      technicalAnalysis
+      technicalAnalysis,
+      technicalIndicators
     }
   } catch (error) {
     console.error('Error analyzing news:', error)
@@ -367,7 +397,82 @@ Please respond in the following format:
         url: item.url
       })),
       advice: "Unable to generate analysis. Please try again later.",
-      technicalAnalysis: technicalIndicators ? analyzeTechnicalIndicators(technicalIndicators) : undefined
+      technicalAnalysis: technicalIndicators ? analyzeTechnicalIndicators(technicalIndicators) : undefined,
+      technicalIndicators
+    }
+  }
+}
+
+const calculateStockScore = (indicators: TechnicalIndicators): StockScore => {
+  // 趋势强度 (0-100)
+  const trendStrength = indicators.sma.signal === 'bullish' && indicators.ema.signal === 'bullish' ? 100 :
+    indicators.sma.signal === 'bearish' && indicators.ema.signal === 'bearish' ? 0 :
+    indicators.sma.signal === 'bullish' || indicators.ema.signal === 'bullish' ? 75 : 25
+
+  // 动量强度 (0-100)
+  const momentumStrength = indicators.rsi.signal === 'oversold' ? 0 :
+    indicators.rsi.signal === 'overbought' ? 100 :
+    indicators.rsi.value
+
+  // MACD强度 (0-100)
+  const macdStrength = indicators.macd.signal === 'bullish' ? 100 :
+    indicators.macd.signal === 'bearish' ? 0 : 50
+
+  // 价格相对强度 (0-100)
+  const priceStrength = ((indicators.sma.price - indicators.sma.value) / indicators.sma.value) * 100
+  const normalizedPriceStrength = Math.min(Math.max(priceStrength + 50, 0), 100)
+
+  // 波动性 (0-100，越低越好)
+  const volatility = Math.abs(indicators.macd.value) * 10
+  const normalizedVolatility = Math.min(Math.max(100 - volatility, 0), 100)
+
+  return {
+    trendStrength,
+    momentumStrength,
+    macdStrength,
+    priceStrength: normalizedPriceStrength,
+    volatility: normalizedVolatility
+  }
+}
+
+const createRadarChartData = (score: StockScore) => {
+  return {
+    labels: ['趋势强度', '动量强度', 'MACD强度', '价格强度', '稳定性'],
+    datasets: [
+      {
+        label: '技术指标评分',
+        data: [
+          score.trendStrength,
+          score.momentumStrength,
+          score.macdStrength,
+          score.priceStrength,
+          score.volatility
+        ],
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+      }
+    ]
+  }
+}
+
+const radarChartOptions = {
+  scales: {
+    r: {
+      angleLines: {
+        display: true
+      },
+      suggestedMin: 0,
+      suggestedMax: 100
+    }
+  },
+  plugins: {
+    legend: {
+      display: false
     }
   }
 }
@@ -379,6 +484,7 @@ const AIReport = () => {
   const [newsAnalysis, setNewsAnalysis] = useState<NewsAnalysis | null>(null)
   const [loading, setLoading] = useState(false)
   const [processingQueue, setProcessingQueue] = useState(false)
+  const [stockScore, setStockScore] = useState<StockScore | null>(null)
   const investments = useInvestmentStore((state) => state.investments)
   const loadInvestments = useInvestmentStore((state) => state.loadInvestments)
   const watchlist = useWatchlistStore((state) => state.watchlist)
@@ -502,6 +608,10 @@ const AIReport = () => {
         // 使用缓存的数据
         setNews(cachedData.news)
         setNewsAnalysis(cachedData.analysis)
+        if (cachedData.technicalIndicators) {
+          const score = calculateStockScore(cachedData.technicalIndicators)
+          setStockScore(score)
+        }
         return
       }
       
@@ -515,14 +625,20 @@ const AIReport = () => {
       setLoading(true)
       try {
         const newsData = await fetchNews(selectedStock)
+        const technicalIndicators = await fetchTechnicalIndicators(selectedStock)
         setNews(newsData)
-        const analysis = await analyzeNews(newsData)
+        const analysis = await analyzeNews(newsData, technicalIndicators)
         setNewsAnalysis(analysis)
+        
+        // 计算并设置股票分数
+        const score = calculateStockScore(technicalIndicators)
+        setStockScore(score)
         
         // 更新缓存
         cache.set(selectedStock, {
           news: newsData,
           analysis,
+          technicalIndicators,
           timestamp: now
         })
         
@@ -631,6 +747,35 @@ const AIReport = () => {
           <p className="text-gray-500">加载中...</p>
         ) : newsAnalysis ? (
           <div className="space-y-6">
+            {/* Radar Chart */}
+            {stockScore ? (
+              <div className="bg-white p-4 rounded-lg border">
+                <h3 className="font-medium mb-4 text-center">技术指标综合评分</h3>
+                <div className="w-full max-w-md mx-auto" style={{ height: '400px' }}>
+                  <Radar 
+                    data={createRadarChartData(stockScore)} 
+                    options={{
+                      ...radarChartOptions,
+                      maintainAspectRatio: false,
+                      responsive: true
+                    }} 
+                  />
+                </div>
+                <div className="mt-4 text-sm text-gray-600 text-center">
+                  <p>评分说明：</p>
+                  <ul className="list-disc list-inside">
+                    <li>趋势强度：基于SMA和EMA的趋势判断</li>
+                    <li>动量强度：基于RSI的动量指标</li>
+                    <li>MACD强度：基于MACD的趋势信号</li>
+                    <li>价格强度：当前价格相对均线的位置</li>
+                    <li>稳定性：价格波动的稳定性评估</li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-500 text-center">正在计算技术指标评分...</div>
+            )}
+
             {/* News Titles */}
             <div>
               <h3 className="font-medium mb-2">最新新闻标题：</h3>
