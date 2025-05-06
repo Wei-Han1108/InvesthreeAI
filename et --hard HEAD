@@ -1,0 +1,31 @@
+[33mcommit 46caa2e1de0ed930816c2bd148c225a3ce6bc71d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: weih24800 <weih24800@gmail.com>
+Date:   Mon May 5 16:09:36 2025 -0400
+
+    add chatgpt api and get a simple chat page
+
+[33mcommit 15fdac030390108e5e79bbe8856ba7567c37aa04[m
+Author: weih24800 <weih24800@gmail.com>
+Date:   Mon May 5 15:31:24 2025 -0400
+
+    optimize add investment
+
+[33mcommit a073fbfe498466791ba141f9d73a87f298214024[m
+Author: weih24800 <weih24800@gmail.com>
+Date:   Mon May 5 14:44:04 2025 -0400
+
+    fix watchlist refresh
+
+[33mcommit 26cb05148e4fc0185aebbc0fcf9df69097f471b2[m
+Author: weih24800 <weih24800@gmail.com>
+Date:   Mon May 5 13:56:02 2025 -0400
+
+    ---add readme
+    
+    ---create and use new table Investments
+
+[33mcommit 3fcbdc2fb7f963763b0e78311dd46f1b0153ca46[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: weih24800 <weih24800@gmail.com>
+Date:   Mon May 5 12:02:09 2025 -0400
+
+    Initial commit
