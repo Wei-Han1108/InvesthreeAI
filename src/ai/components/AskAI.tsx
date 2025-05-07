@@ -3,6 +3,8 @@ import { aiService } from '../services/aiService'
 import useInvestmentStore from '../../store/investmentStore'
 import useWatchlistStore from '../../store/watchlistStore'
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { useAuth } from '../../contexts/AuthContext'
+import { userSurveyService } from '../../services/userSurveyService'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -47,6 +49,15 @@ const AskAI = () => {
     scrollToBottom()
   }, [messages])
 
+  const { user } = useAuth()
+  const [survey, setSurvey] = useState<any>(null)
+
+  useEffect(() => {
+    if (user?.email) {
+      userSurveyService.getUserSurvey(user.email).then(setSurvey)
+    }
+  }, [user])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!question.trim()) return
@@ -63,7 +74,7 @@ const AskAI = () => {
     setError('')
 
     try {
-      const response = await aiService.askQuestion(question, uniqueInvestments, watchlist)
+      const response = await aiService.askQuestion(question, uniqueInvestments, watchlist, survey)
       
       // 添加AI回复
       const assistantMessage: Message = {

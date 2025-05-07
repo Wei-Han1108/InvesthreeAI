@@ -6,30 +6,12 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { stockSearchService } from '../services/stockSearchService'
 
 const Dashboard = () => {
-  const investments = useInvestmentStore((state) => state.investments)
-  const loadInvestments = useInvestmentStore((state) => state.loadInvestments)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null)
+  const [stockProfile, setStockProfile] = useState<any | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
-
-  // 加载投资数据
-  useEffect(() => {
-    loadInvestments().catch(error => {
-      console.error('Failed to load investments:', error)
-    })
-  }, [loadInvestments])
-
-  const totalInvestment = investments.reduce(
-    (sum, inv) => sum + inv.purchasePrice * inv.quantity,
-    0
-  )
-  const currentValue = investments.reduce(
-    (sum, inv) => sum + inv.currentPrice * inv.quantity,
-    0
-  )
-  const profitLoss = currentValue - totalInvestment
-  const profitLossPercentage = (profitLoss / totalInvestment) * 100
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,7 +19,6 @@ const Dashboard = () => {
         setShowResults(false)
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
@@ -53,13 +34,22 @@ const Dashboard = () => {
         setShowResults(false)
       }
     }
-
     const debounceTimer = setTimeout(search, 500)
     return () => clearTimeout(debounceTimer)
   }, [searchQuery])
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
+    setSelectedSymbol(null)
+    setStockProfile(null)
+  }, [])
+
+  const handleResultSelect = useCallback(async (symbol: string) => {
+    setSelectedSymbol(symbol)
+    setShowResults(false)
+    setSearchQuery(symbol)
+    const profile = await stockSearchService.getStockProfile(symbol)
+    setStockProfile(profile)
   }, [])
 
   const handleCloseResults = useCallback(() => {
@@ -68,6 +58,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-gray-900">Stock Monitor</h1>
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <div className="max-w-2xl mx-auto relative" ref={searchRef}>
           <input
@@ -81,91 +72,32 @@ const Dashboard = () => {
             <SearchResults
               results={searchResults}
               onClose={handleCloseResults}
+              onSelect={handleResultSelect}
             />
           )}
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-gray-500 text-sm">总投资</h3>
-          <p className="text-2xl font-bold">¥{totalInvestment.toLocaleString()}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-gray-500 text-sm">当前价值</h3>
-          <p className="text-2xl font-bold">¥{currentValue.toLocaleString()}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-gray-500 text-sm">盈亏</h3>
-          <p
-            className={`text-2xl font-bold ${
-              profitLoss >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}
-          >
-            ¥{profitLoss.toLocaleString()} ({profitLossPercentage.toFixed(2)}%)
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold">最近投资</h2>
+        {stockProfile && (
+          <div className="mt-6 bg-gray-50 p-4 rounded-lg shadow-inner">
+            <div className="flex items-center gap-4 mb-2">
+              {stockProfile.image && <img src={stockProfile.image} alt={stockProfile.companyName} className="w-12 h-12 object-contain" />}
+              <div>
+                <div className="text-xl font-bold">{stockProfile.companyName} ({stockProfile.symbol})</div>
+                <div className="text-gray-500 text-sm">{stockProfile.exchangeShortName} | {stockProfile.industry}</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+              <div>当前价: <span className="font-semibold">${stockProfile.price}</span></div>
+              <div>市值: <span className="font-semibold">{stockProfile.mktCap?.toLocaleString()}</span></div>
+              <div>行业: <span className="font-semibold">{stockProfile.industry}</span></div>
+              <div>CEO: <span className="font-semibold">{stockProfile.ceo}</span></div>
+              <div>国家: <span className="font-semibold">{stockProfile.country}</span></div>
+              <div>官网: <a href={stockProfile.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{stockProfile.website}</a></div>
+            </div>
+            <div className="mt-2 text-gray-700 text-sm">{stockProfile.description}</div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    股票名称
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    股票代码
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    购买价格
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    数量
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    购买日期
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    当前价格
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {investments.map((investment) => (
-                  <tr key={investment.investmentId}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {investment.stockName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {investment.stockCode}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      ¥{investment.purchasePrice}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {investment.quantity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {format(new Date(investment.purchaseDate), 'yyyy-MM-dd')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      ¥{investment.currentPrice}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <Watchlist />
+        )}
       </div>
+      <Watchlist />
     </div>
   )
 }

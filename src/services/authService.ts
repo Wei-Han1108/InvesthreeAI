@@ -76,6 +76,25 @@ export const authService = {
     })
   },
 
+  async resendConfirmationCode(username: string) {
+    return new Promise((resolve, reject) => {
+      const cognitoUser = new CognitoUser({
+        Username: username,
+        Pool: userPool,
+      })
+
+      cognitoUser.resendConfirmationCode((err, result) => {
+        if (err) {
+          console.error('ResendConfirmationCode Error:', err)
+          reject(err)
+          return
+        }
+        console.log('ResendConfirmationCode Success:', result)
+        resolve(result)
+      })
+    })
+  },
+
   async signIn(username: string, password: string) {
     return new Promise((resolve, reject) => {
       const authenticationDetails = new AuthenticationDetails({

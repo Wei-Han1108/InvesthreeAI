@@ -10,11 +10,8 @@ function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <span className="text-xl font-bold text-gray-900 mr-8">InvesthreeAI</span>
-            <Link to="/" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
-              Dashboard
-            </Link>
-            <Link to="/portfolio" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
-              Portfolio
+            <Link to="/home" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
+              Home
             </Link>
             <Link to="/add" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
               Add Investment
@@ -28,14 +25,14 @@ function Navbar() {
             <Link to="/ai-report" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
               AI Report
             </Link>
+            <Link to="/news" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
+              Breaking News
+            </Link>
           </div>
           <div className="flex items-center">
-            <button
-              onClick={signOut}
-              className="px-4 py-2 text-gray-700 hover:text-gray-900"
-            >
-              Sign Out
-            </button>
+            <Link to="/account" className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900">
+              My Account
+            </Link>
           </div>
         </div>
       </div>

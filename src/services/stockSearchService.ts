@@ -1,4 +1,4 @@
-interface SearchResult {
+export interface SearchResult {
   symbol: string
   name: string
   exchange: string
@@ -55,6 +55,25 @@ export const stockSearchService = {
     } catch (error) {
       console.error('Failed to get historical data:', error)
       return []
+    }
+  },
+
+  async getStockProfile(symbol: string): Promise<any | null> {
+    try {
+      const response = await fetch(
+        `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=${API_KEY}`
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      if (Array.isArray(data) && data.length > 0) {
+        return data[0]
+      }
+      return null
+    } catch (error) {
+      console.error('Failed to get stock profile:', error)
+      return null
     }
   }
 } 

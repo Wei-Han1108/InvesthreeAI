@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useLocation } from 'react-router-dom'
 
 const Login = () => {
   const [username, setUsername] = useState('')
@@ -8,6 +9,8 @@ const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState('')
   const { signIn, signUp, loading } = useAuth()
+  const location = useLocation()
+  const message = location.state?.message
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,6 +35,15 @@ const Login = () => {
             {isSignUp ? 'Create an account' : 'Sign in to your account'}
           </h2>
         </div>
+        {message && (
+          <div className="rounded-md bg-green-50 p-4">
+            <div className="flex">
+              <div className="ml-3">
+                <p className="text-sm font-medium text-green-800">{message}</p>
+              </div>
+            </div>
+          </div>
+        )}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             {isSignUp && (

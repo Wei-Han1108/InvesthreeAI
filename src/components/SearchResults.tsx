@@ -4,14 +4,24 @@ import useWatchlistStore from '../store/watchlistStore'
 interface SearchResultsProps {
   results: SearchResult[]
   onClose: () => void
+  onSelect?: (symbol: string) => void
 }
 
-const SearchResults = ({ results, onClose }: SearchResultsProps) => {
+const SearchResults = ({ results, onClose, onSelect }: SearchResultsProps) => {
   const { addToWatchlist } = useWatchlistStore()
 
   const handleAddToWatchlist = async (symbol: string, name: string) => {
     await addToWatchlist(symbol, name)
     onClose()
+  }
+
+  const handleClick = (symbol: string, name: string) => {
+    if (onSelect) {
+      onSelect(symbol)
+      onClose()
+    } else {
+      handleAddToWatchlist(symbol, name)
+    }
   }
 
   if (results.length === 0) return null
@@ -33,7 +43,7 @@ const SearchResults = ({ results, onClose }: SearchResultsProps) => {
             <div
               key={result.symbol}
               className="flex justify-between items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
-              onClick={() => handleAddToWatchlist(result.symbol, result.name)}
+              onClick={() => handleClick(result.symbol, result.name)}
             >
               <div>
                 <p className="font-medium">{result.symbol}</p>

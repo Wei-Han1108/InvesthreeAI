@@ -367,7 +367,7 @@ Please respond in the following format:
         'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
