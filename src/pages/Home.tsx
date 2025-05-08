@@ -88,24 +88,24 @@ const exploreFeatures = [
     tagColor: 'bg-orange-100 text-orange-700'
   },
   {
-    title: 'Economic Data',
-    desc: 'Key economic indicators and market statistics',
-    icon: '📈',
-    to: '/economic-data',
+    title: 'Company Info',
+    desc: 'Search and view detailed company profiles',
+    icon: '🏢',
+    to: '/company-info',
     tagColor: 'bg-purple-100 text-purple-700'
   },
   {
     title: 'Market Performance',
     desc: 'Track major indices and market trends',
     icon: '📊',
-    to: '/news',
+    to: '/market-performance',
     tagColor: 'bg-indigo-100 text-indigo-700'
   },
   {
     title: 'Insider Trading',
     desc: 'Monitor corporate insider transactions and activities',
     icon: '👥',
-    to: '/news',
+    to: '/insider-trading',
     tagColor: 'bg-pink-100 text-pink-700'
   }
 ]

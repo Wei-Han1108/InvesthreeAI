@@ -17,7 +17,9 @@ import CryptoSpotlight from './pages/CryptoSpotlight'
 import Forex from './pages/Forex'
 import ETFHoldings from './pages/ETFHoldings'
 import Commodities from './pages/Commodities'
-import EconomicData from './pages/EconomicData'
+import MarketPerformance from './pages/MarketPerformance'
+import InsiderTrading from './pages/InsiderTrading'
+import CompanyInfo from './pages/CompanyInfo'
 
 function AppRoutes() {
   const { user } = useAuth()
@@ -111,8 +113,16 @@ function AppRoutes() {
             element={isAuthenticated ? <Commodities /> : <Navigate to="/login" />}
           />
           <Route
-            path="/economic-data"
-            element={isAuthenticated ? <EconomicData /> : <Navigate to="/login" />}
+            path="/market-performance"
+            element={isAuthenticated ? <MarketPerformance /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/insider-trading"
+            element={isAuthenticated ? <InsiderTrading /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/company-info"
+            element={isAuthenticated ? <CompanyInfo /> : <Navigate to="/login" />}
           />
         </Routes>
       </main>
