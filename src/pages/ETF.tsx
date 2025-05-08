@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { FMP_API_KEY } from '../config'
 
-interface ForexData {
+interface ETFData {
   symbol: string
   name: string
   price: number
   changesPercentage: number
-  bid: number
-  ask: number
-  open: number
-  high: number
-  low: number
+  marketCap: number
   volume: number
+  avgVolume: number
+  sector: string
+  industry: string
+  exchange: string
 }
 
-const Forex = () => {
-  const [forexData, setForexData] = useState<ForexData[]>([])
+const ETF = () => {
+  const [etfData, setEtfData] = useState<ETFData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,22 +25,22 @@ const Forex = () => {
   const suggestTimeout = useRef<any>(null)
 
   useEffect(() => {
-    const fetchForexData = async () => {
+    const fetchETFData = async () => {
       setLoading(true)
       setError('')
       try {
-        const res = await fetch(`https://financialmodelingprep.com/api/v3/forex?apikey=${FMP_API_KEY}`)
-        if (!res.ok) throw new Error('Failed to fetch forex data')
+        const res = await fetch(`https://financialmodelingprep.com/api/v3/etf/list?apikey=${FMP_API_KEY}`)
+        if (!res.ok) throw new Error('Failed to fetch ETF data')
         const data = await res.json()
-        setForexData(data)
+        setEtfData(data)
       } catch (err: any) {
-        setError(err.message || 'Error loading forex data')
+        setError(err.message || 'Error loading ETF data')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchForexData()
+    fetchETFData()
   }, [])
 
   const fetchSuggestions = async (query: string) => {
@@ -66,12 +66,12 @@ const Forex = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`https://financialmodelingprep.com/api/v3/forex/${searchQuery}?apikey=${FMP_API_KEY}`)
-      if (!res.ok) throw new Error('Failed to fetch forex data')
+      const res = await fetch(`https://financialmodelingprep.com/api/v3/etf/${searchQuery}?apikey=${FMP_API_KEY}`)
+      if (!res.ok) throw new Error('Failed to fetch ETF data')
       const data = await res.json()
-      setForexData(Array.isArray(data) ? data : [data])
+      setEtfData(Array.isArray(data) ? data : [data])
     } catch (err: any) {
-      setError(err.message || 'Error searching forex')
+      setError(err.message || 'Error searching ETF')
     } finally {
       setLoading(false)
     }
@@ -90,7 +90,7 @@ const Forex = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Forex Market</h1>
+      <h1 className="text-2xl font-bold mb-4">ETF Market</h1>
       
       <form onSubmit={handleSearch} className="mb-4">
         <div className="relative" ref={suggestRef}>
@@ -107,7 +107,7 @@ const Forex = () => {
                 setShowSuggestions(true)
               }, 300)
             }}
-            placeholder="Search forex pairs (e.g., EUR/USD)"
+            placeholder="Search ETFs (e.g., SPY)"
             className="w-full p-2 border rounded"
           />
           {showSuggestions && suggestions.length > 0 && (
@@ -147,32 +147,34 @@ const Forex = () => {
             <thead>
               <tr className="bg-gray-100">
                 <th className="px-4 py-2 text-left">Symbol</th>
+                <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-right">Price</th>
                 <th className="px-4 py-2 text-right">Change (%)</th>
-                <th className="px-4 py-2 text-right">Bid</th>
-                <th className="px-4 py-2 text-right">Ask</th>
-                <th className="px-4 py-2 text-right">Open</th>
-                <th className="px-4 py-2 text-right">High</th>
-                <th className="px-4 py-2 text-right">Low</th>
+                <th className="px-4 py-2 text-right">Market Cap</th>
                 <th className="px-4 py-2 text-right">Volume</th>
+                <th className="px-4 py-2 text-right">Avg Volume</th>
+                <th className="px-4 py-2 text-left">Sector</th>
+                <th className="px-4 py-2 text-left">Industry</th>
+                <th className="px-4 py-2 text-left">Exchange</th>
               </tr>
             </thead>
             <tbody>
-              {forexData.map((forex) => (
-                <tr key={forex.symbol} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2 font-bold">{forex.symbol}</td>
-                  <td className="px-4 py-2 text-right">{forex.price.toFixed(4)}</td>
+              {etfData.map((etf) => (
+                <tr key={etf.symbol} className="border-b hover:bg-gray-50">
+                  <td className="px-4 py-2 font-bold">{etf.symbol}</td>
+                  <td className="px-4 py-2">{etf.name}</td>
+                  <td className="px-4 py-2 text-right">${etf.price.toFixed(2)}</td>
                   <td className={`px-4 py-2 text-right font-semibold ${
-                    forex.changesPercentage > 0 ? 'text-green-600' : forex.changesPercentage < 0 ? 'text-red-600' : ''
+                    etf.changesPercentage > 0 ? 'text-green-600' : etf.changesPercentage < 0 ? 'text-red-600' : ''
                   }`}>
-                    {forex.changesPercentage.toFixed(2)}%
+                    {etf.changesPercentage.toFixed(2)}%
                   </td>
-                  <td className="px-4 py-2 text-right">{forex.bid.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.ask.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.open.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.high.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.low.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.volume.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">${etf.marketCap.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">{etf.volume.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">{etf.avgVolume.toLocaleString()}</td>
+                  <td className="px-4 py-2">{etf.sector || '-'}</td>
+                  <td className="px-4 py-2">{etf.industry || '-'}</td>
+                  <td className="px-4 py-2">{etf.exchange}</td>
                 </tr>
               ))}
             </tbody>
@@ -183,4 +185,4 @@ const Forex = () => {
   )
 }
 
-export default Forex 
+export default ETF 

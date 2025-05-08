@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocumentClient, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb'
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, ScanCommand, DeleteCommand, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import { awsConfig } from '../config/aws'
 import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity'
 import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-identity'
@@ -103,5 +103,50 @@ export const investmentService = {
       profitLoss,
       profitLossPercentage,
     }
+  },
+
+  async deleteInvestment(userId: string, investmentId: string) {
+    const docClient = getClient()
+    const params = {
+      TableName: 'Investments',
+      Key: {
+        userId,
+        investmentId,
+      },
+    }
+    await docClient.send(new DeleteCommand(params))
+    return true
+  },
+
+  async sellInvestment(userId: string, investmentId: string, sellQuantity: number, sellPrice: number, sellDate: string) {
+    const docClient = getClient()
+    const params = {
+      TableName: 'Investments',
+      Key: {
+        userId,
+        investmentId,
+      },
+    }
+    const result = await docClient.send(new GetCommand(params))
+    const investment = result.Item
+    if (!investment) throw new Error('Investment not found')
+    if (sellQuantity > investment.quantity) throw new Error('Sell quantity exceeds holding quantity')
+    const profitLoss = (sellPrice - investment.purchasePrice) * sellQuantity
+    const updateParams = {
+      TableName: 'Investments',
+      Key: {
+        userId,
+        investmentId,
+      },
+      UpdateExpression: 'SET sellQuantity = :sq, sellPrice = :sp, sellDate = :sd, profitLoss = :pl, quantity = quantity - :sq',
+      ExpressionAttributeValues: {
+        ':sq': sellQuantity,
+        ':sp': sellPrice,
+        ':sd': sellDate,
+        ':pl': profitLoss,
+      },
+    }
+    await docClient.send(new UpdateCommand(updateParams))
+    return true
   },
 } 

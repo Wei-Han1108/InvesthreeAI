@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { FMP_API_KEY } from '../config'
 
-interface ForexData {
+interface CryptoData {
   symbol: string
   name: string
   price: number
   changesPercentage: number
-  bid: number
-  ask: number
-  open: number
-  high: number
-  low: number
+  marketCap: number
   volume: number
+  circulatingSupply: number
+  totalSupply: number
+  rank: number
 }
 
-const Forex = () => {
-  const [forexData, setForexData] = useState<ForexData[]>([])
+const Crypto = () => {
+  const [cryptoData, setCryptoData] = useState<CryptoData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,22 +24,22 @@ const Forex = () => {
   const suggestTimeout = useRef<any>(null)
 
   useEffect(() => {
-    const fetchForexData = async () => {
+    const fetchCryptoData = async () => {
       setLoading(true)
       setError('')
       try {
-        const res = await fetch(`https://financialmodelingprep.com/api/v3/forex?apikey=${FMP_API_KEY}`)
-        if (!res.ok) throw new Error('Failed to fetch forex data')
+        const res = await fetch(`https://financialmodelingprep.com/api/v3/cryptocurrency?apikey=${FMP_API_KEY}`)
+        if (!res.ok) throw new Error('Failed to fetch crypto data')
         const data = await res.json()
-        setForexData(data)
+        setCryptoData(data)
       } catch (err: any) {
-        setError(err.message || 'Error loading forex data')
+        setError(err.message || 'Error loading crypto data')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchForexData()
+    fetchCryptoData()
   }, [])
 
   const fetchSuggestions = async (query: string) => {
@@ -66,12 +65,12 @@ const Forex = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`https://financialmodelingprep.com/api/v3/forex/${searchQuery}?apikey=${FMP_API_KEY}`)
-      if (!res.ok) throw new Error('Failed to fetch forex data')
+      const res = await fetch(`https://financialmodelingprep.com/api/v3/cryptocurrency/${searchQuery}?apikey=${FMP_API_KEY}`)
+      if (!res.ok) throw new Error('Failed to fetch crypto data')
       const data = await res.json()
-      setForexData(Array.isArray(data) ? data : [data])
+      setCryptoData(Array.isArray(data) ? data : [data])
     } catch (err: any) {
-      setError(err.message || 'Error searching forex')
+      setError(err.message || 'Error searching crypto')
     } finally {
       setLoading(false)
     }
@@ -90,7 +89,7 @@ const Forex = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Forex Market</h1>
+      <h1 className="text-2xl font-bold mb-4">Cryptocurrency Market</h1>
       
       <form onSubmit={handleSearch} className="mb-4">
         <div className="relative" ref={suggestRef}>
@@ -107,7 +106,7 @@ const Forex = () => {
                 setShowSuggestions(true)
               }, 300)
             }}
-            placeholder="Search forex pairs (e.g., EUR/USD)"
+            placeholder="Search cryptocurrencies (e.g., BTC)"
             className="w-full p-2 border rounded"
           />
           {showSuggestions && suggestions.length > 0 && (
@@ -146,33 +145,33 @@ const Forex = () => {
           <table className="min-w-full bg-white">
             <thead>
               <tr className="bg-gray-100">
+                <th className="px-4 py-2 text-left">Rank</th>
                 <th className="px-4 py-2 text-left">Symbol</th>
+                <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-right">Price</th>
                 <th className="px-4 py-2 text-right">Change (%)</th>
-                <th className="px-4 py-2 text-right">Bid</th>
-                <th className="px-4 py-2 text-right">Ask</th>
-                <th className="px-4 py-2 text-right">Open</th>
-                <th className="px-4 py-2 text-right">High</th>
-                <th className="px-4 py-2 text-right">Low</th>
+                <th className="px-4 py-2 text-right">Market Cap</th>
                 <th className="px-4 py-2 text-right">Volume</th>
+                <th className="px-4 py-2 text-right">Circulating Supply</th>
+                <th className="px-4 py-2 text-right">Total Supply</th>
               </tr>
             </thead>
             <tbody>
-              {forexData.map((forex) => (
-                <tr key={forex.symbol} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2 font-bold">{forex.symbol}</td>
-                  <td className="px-4 py-2 text-right">{forex.price.toFixed(4)}</td>
+              {cryptoData.map((crypto) => (
+                <tr key={crypto.symbol} className="border-b hover:bg-gray-50">
+                  <td className="px-4 py-2">{crypto.rank}</td>
+                  <td className="px-4 py-2 font-bold">{crypto.symbol}</td>
+                  <td className="px-4 py-2">{crypto.name}</td>
+                  <td className="px-4 py-2 text-right">${crypto.price.toFixed(2)}</td>
                   <td className={`px-4 py-2 text-right font-semibold ${
-                    forex.changesPercentage > 0 ? 'text-green-600' : forex.changesPercentage < 0 ? 'text-red-600' : ''
+                    crypto.changesPercentage > 0 ? 'text-green-600' : crypto.changesPercentage < 0 ? 'text-red-600' : ''
                   }`}>
-                    {forex.changesPercentage.toFixed(2)}%
+                    {crypto.changesPercentage.toFixed(2)}%
                   </td>
-                  <td className="px-4 py-2 text-right">{forex.bid.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.ask.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.open.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.high.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.low.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.volume.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">${crypto.marketCap.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">${crypto.volume.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">{crypto.circulatingSupply.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">{crypto.totalSupply.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -183,4 +182,4 @@ const Forex = () => {
   )
 }
 
-export default Forex 
+export default Crypto 
