@@ -40,15 +40,7 @@ const mainFeatures = [
     to: '/ai-report',
     tag: 'AI Investment',
     tagColor: 'bg-blue-50 text-blue-600'
-  },
-  {
-    title: 'Pattern Detection',
-    desc: 'AI-automated chart pattern detection for stocks, crypto, and ETFs',
-    icon: '📊',
-    to: '/ai-report',
-    tag: 'Stock & Crypto',
-    tagColor: 'bg-green-50 text-green-600'
-  },
+  }
 ]
 
 const exploreFeatures = [

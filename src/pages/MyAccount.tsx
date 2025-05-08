@@ -2,6 +2,7 @@ import { useAuth } from '../contexts/AuthContext'
 import useInvestmentStore from '../store/investmentStore'
 import { useEffect, useState } from 'react'
 import { Dialog } from '@headlessui/react'
+import { userService } from '../services/userService'
 
 const FEEDBACK_TYPES = [
   { value: '', label: 'Select the type of issue' },
@@ -13,6 +14,7 @@ const FEEDBACK_TYPES = [
 
 const TABS = [
   { key: 'account', label: 'Account' },
+  { key: 'deposit', label: 'Deposit' },
   { key: 'portfolio', label: 'Portfolio' },
   { key: 'support', label: 'Support' },
 ]
@@ -34,10 +36,28 @@ const MyAccount = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState('')
+  const [balance, setBalance] = useState<number | null>(null)
+  const [depositAmount, setDepositAmount] = useState('')
+  const [depositLoading, setDepositLoading] = useState(false)
+  const [depositSuccess, setDepositSuccess] = useState('')
+  const [depositError, setDepositError] = useState('')
 
   useEffect(() => {
     loadInvestments()
   }, [loadInvestments])
+
+  useEffect(() => {
+    async function fetchBalance() {
+      if (!user?.username) return
+      try {
+        const userInfo = await userService.getUser(user.username)
+        setBalance(userInfo?.balance ?? 0)
+      } catch (e) {
+        setBalance(0)
+      }
+    }
+    fetchBalance()
+  }, [user?.username])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -60,9 +80,34 @@ const MyAccount = () => {
     }, 1200)
   }
 
+  const handleDeposit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setDepositLoading(true)
+    setDepositSuccess('')
+    setDepositError('')
+    const amount = parseFloat(depositAmount)
+    if (isNaN(amount) || amount <= 0) {
+      setDepositError('Please enter a valid amount')
+      setDepositLoading(false)
+      return
+    }
+    try {
+      await userService.deposit(user.username, amount)
+      setDepositSuccess('Deposit successful!')
+      setDepositAmount('')
+      // 重新获取余额
+      const userInfo = await userService.getUser(user.username)
+      setBalance(userInfo?.balance ?? 0)
+    } catch (e) {
+      setDepositError('Deposit failed')
+    }
+    setDepositLoading(false)
+  }
+
   // Account Info Section
   const AccountSection = (
     <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-xl font-semibold mb-4">Account Info</h3>
       <div className="divide-y divide-gray-200">
         <div className="flex items-center justify-between py-4">
           <div className="text-gray-600">User Name</div>
@@ -133,44 +178,56 @@ const MyAccount = () => {
             }}>
               <input
                 type="password"
-                className="w-full px-3 py-2 border rounded bg-gray-100 text-gray-900"
+                className="border px-3 py-2 rounded text-gray-900 w-40"
                 placeholder="New Password"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                required
               />
               <input
                 type="password"
-                className="w-full px-3 py-2 border rounded bg-gray-100 text-gray-900"
+                className="border px-3 py-2 rounded text-gray-900 w-40"
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
-                required
               />
-              {passwordError && <div className="text-red-500">{passwordError}</div>}
-              {passwordSuccess && <div className="text-green-500">{passwordSuccess}</div>}
-              <div className="flex gap-2 mt-2">
-                <button type="button" className="px-4 py-1 bg-gray-200 rounded text-gray-700" onClick={() => {
-                  setShowPasswordFields(false)
-                  setNewPassword('')
-                  setConfirmPassword('')
-                  setPasswordError('')
-                  setPasswordSuccess('')
-                }}>Cancel</button>
-                <button type="submit" className="px-4 py-1 bg-teal-500 hover:bg-teal-600 rounded text-white font-medium">Save</button>
-              </div>
+              <button type="submit" className="px-4 py-2 bg-teal-500 hover:bg-teal-600 rounded text-white font-medium">Update</button>
+              {passwordError && <div className="text-red-500 mt-2">{passwordError}</div>}
+              {passwordSuccess && <div className="text-green-500 mt-2">{passwordSuccess}</div>}
             </form>
           )}
         </div>
       </div>
-      <div className="flex justify-end mt-8">
-        <button
-          onClick={signOut}
-          className="px-6 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-white font-semibold"
-        >
-          Log Out
-        </button>
+    </div>
+  )
+
+  // Deposit Section
+  const DepositSection = (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-xl font-semibold mb-4">Deposit</h3>
+      <div className="mb-4">
+        <span className="text-gray-600">Account Balance: </span>
+        <span className="text-lg font-bold text-green-600">${balance?.toLocaleString() ?? '0'}</span>
       </div>
+      <form className="flex items-center gap-2 mb-6" onSubmit={handleDeposit}>
+        <input
+          type="number"
+          min="1"
+          step="any"
+          className="border px-3 py-2 rounded text-gray-900 w-40"
+          placeholder="Deposit Amount"
+          value={depositAmount}
+          onChange={e => setDepositAmount(e.target.value)}
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 bg-teal-500 hover:bg-teal-600 rounded text-white font-medium"
+          disabled={depositLoading}
+        >
+          {depositLoading ? 'Depositing...' : 'Deposit'}
+        </button>
+      </form>
+      {depositSuccess && <div className="text-green-500 mb-2">{depositSuccess}</div>}
+      {depositError && <div className="text-red-500 mb-2">{depositError}</div>}
     </div>
   )
 
@@ -302,6 +359,7 @@ const MyAccount = () => {
       </div>
       {/* Tab Content */}
       {selectedTab === 'account' && AccountSection}
+      {selectedTab === 'deposit' && DepositSection}
       {selectedTab === 'portfolio' && PortfolioSection}
       {selectedTab === 'support' && SupportSection}
     </div>

@@ -79,4 +79,20 @@ export const userService = {
     const result = await docClient.send(new ScanCommand(params))
     return result.Items || []
   },
+
+  async deposit(userId: string, amount: number) {
+    const docClient = getClient()
+    const params = {
+      TableName: awsConfig.dynamoDB.usersTableName,
+      Key: { userId },
+      UpdateExpression: 'SET balance = if_not_exists(balance, :zero) + :amount',
+      ExpressionAttributeValues: {
+        ':amount': amount,
+        ':zero': 0
+      },
+      ReturnValues: 'UPDATED_NEW'
+    }
+    const result = await docClient.send(new (await import('@aws-sdk/lib-dynamodb')).UpdateCommand(params))
+    return result.Attributes?.balance
+  },
 } 
