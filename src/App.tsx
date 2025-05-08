@@ -13,6 +13,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import MyAccount from './pages/MyAccount'
 import BreakingNews from './pages/BreakingNews'
 import Home from './pages/Home'
+import CryptoSpotlight from './pages/CryptoSpotlight'
+import Forex from './pages/Forex'
+import ETFHoldings from './pages/ETFHoldings'
+import Commodities from './pages/Commodities'
+import EconomicData from './pages/EconomicData'
 
 function AppRoutes() {
   const { user } = useAuth()
@@ -88,6 +93,26 @@ function AppRoutes() {
           <Route
             path="/news"
             element={<BreakingNews />}
+          />
+          <Route
+            path="/crypto-spotlight"
+            element={isAuthenticated ? <CryptoSpotlight /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/forex"
+            element={isAuthenticated ? <Forex /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/etf-holdings"
+            element={isAuthenticated ? <ETFHoldings /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/commodities"
+            element={isAuthenticated ? <Commodities /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/economic-data"
+            element={isAuthenticated ? <EconomicData /> : <Navigate to="/login" />}
           />
         </Routes>
       </main>

@@ -60,26 +60,54 @@ const exploreFeatures = [
     tagColor: 'bg-blue-100 text-blue-700'
   },
   {
-    title: 'Hedge Fund Tracker',
-    desc: 'Explore the portfolios and moves of top hedge funds',
+    title: 'Forex',
+    desc: 'Real-time forex rates and trading data',
     icon: '🏦',
-    to: '/news',
+    to: '/forex',
     tagColor: 'bg-green-100 text-green-700'
   },
   {
     title: 'Crypto Spotlight',
     desc: 'Provides real-time data and news for cryptocurrencies',
     icon: '💹',
-    to: '/news',
+    to: '/crypto-spotlight',
     tagColor: 'bg-yellow-100 text-yellow-700'
   },
   {
-    title: 'Gainers & Losers',
-    desc: "Stay updated on today's top market movers",
-    icon: '📉',
-    to: '/news',
+    title: 'ETF Holdings',
+    desc: 'Track and analyze ETF portfolio compositions',
+    icon: '📊',
+    to: '/etf-holdings',
     tagColor: 'bg-red-100 text-red-700'
   },
+  {
+    title: 'Commodities',
+    desc: 'Monitor precious metals, energy, and agricultural markets',
+    icon: '🪙',
+    to: '/commodities',
+    tagColor: 'bg-orange-100 text-orange-700'
+  },
+  {
+    title: 'Economic Data',
+    desc: 'Key economic indicators and market statistics',
+    icon: '📈',
+    to: '/economic-data',
+    tagColor: 'bg-purple-100 text-purple-700'
+  },
+  {
+    title: 'Market Performance',
+    desc: 'Track major indices and market trends',
+    icon: '📊',
+    to: '/news',
+    tagColor: 'bg-indigo-100 text-indigo-700'
+  },
+  {
+    title: 'Insider Trading',
+    desc: 'Monitor corporate insider transactions and activities',
+    icon: '👥',
+    to: '/news',
+    tagColor: 'bg-pink-100 text-pink-700'
+  }
 ]
 
 const Home = () => {
@@ -127,7 +155,9 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {exploreFeatures.map(f => (
             <Link to={f.to} key={f.title} className="bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg p-6 flex flex-col gap-2 transition">
-              <div className={`text-xl mb-2 ${f.tagColor}`}>{f.icon}</div>
+              <div className={`text-xl mb-2 flex items-center`}>
+                <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full ${f.tagColor}`}>{f.icon}</span>
+              </div>
               <div className="font-bold text-base text-gray-900">{f.title}</div>
               <div className="text-gray-500 text-sm">{f.desc}</div>
             </Link>
