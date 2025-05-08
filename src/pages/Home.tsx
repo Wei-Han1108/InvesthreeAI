@@ -29,7 +29,7 @@ const mainFeatures = [
     title: 'Daytrading Center',
     desc: 'Real-time market tracker for fast-paced day trading decisions.',
     icon: '⚡',
-    to: '/news',
+    to: '/trading-center',
     tag: 'Stock & Crypto',
     tagColor: 'bg-green-50 text-green-600'
   },

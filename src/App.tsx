@@ -20,6 +20,7 @@ import Commodities from './pages/Commodities'
 import MarketPerformance from './pages/MarketPerformance'
 import InsiderTrading from './pages/InsiderTrading'
 import CompanyInfo from './pages/CompanyInfo'
+import TradingCenter from './pages/TradingCenter'
 
 function AppRoutes() {
   const { user } = useAuth()
@@ -123,6 +124,12 @@ function AppRoutes() {
           <Route
             path="/company-info"
             element={isAuthenticated ? <CompanyInfo /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/trading-center"
+            element={
+              isAuthenticated ? <TradingCenter /> : <Navigate to="/login" />
+            }
           />
         </Routes>
       </main>

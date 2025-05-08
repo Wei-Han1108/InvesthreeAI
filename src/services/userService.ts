@@ -90,7 +90,7 @@ export const userService = {
         ':amount': amount,
         ':zero': 0
       },
-      ReturnValues: 'UPDATED_NEW'
+      ReturnValues: 'UPDATED_NEW' as const
     }
     const result = await docClient.send(new (await import('@aws-sdk/lib-dynamodb')).UpdateCommand(params))
     return result.Attributes?.balance
