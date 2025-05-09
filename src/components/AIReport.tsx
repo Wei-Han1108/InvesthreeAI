@@ -13,7 +13,7 @@ import {
   Legend
 } from 'chart.js'
 
-// 注册 Chart.js 组件
+// Register Chart.js components
 ChartJS.register(
   RadialLinearScale,
   PointElement,
@@ -79,14 +79,14 @@ interface StockScore {
 
 const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY
 const NEWS_API_KEY = '4a44dc5b6b314553a0aed659bacdec3b'
-const CACHE_DURATION = 1000 * 5 // 5秒的缓存时间，用于测试
+const CACHE_DURATION = 1000 * 5 // 5-second cache duration for testing
 const REPORT_QUEUE_KEY = 'stock_report_queue'
 const REPORT_STORAGE_KEY = 'stock_reports'
 
-// 本地缓存
+// Local cache
 const cache = new Map<string, CachedData>()
 
-// 从 localStorage 加载报告
+// Load reports from localStorage
 const loadReportsFromStorage = (): Map<string, CachedData> => {
   try {
     const stored = localStorage.getItem(REPORT_STORAGE_KEY)
@@ -100,7 +100,7 @@ const loadReportsFromStorage = (): Map<string, CachedData> => {
   return new Map()
 }
 
-// 保存报告到 localStorage
+// Save reports to localStorage
 const saveReportsToStorage = (reports: Map<string, CachedData>) => {
   try {
     const data = Object.fromEntries(reports)
@@ -110,7 +110,7 @@ const saveReportsToStorage = (reports: Map<string, CachedData>) => {
   }
 }
 
-// 从 localStorage 加载队列
+// Load queue from localStorage
 const loadQueueFromStorage = (): string[] => {
   try {
     const stored = localStorage.getItem(REPORT_QUEUE_KEY)
@@ -123,7 +123,7 @@ const loadQueueFromStorage = (): string[] => {
   return []
 }
 
-// 保存队列到 localStorage
+// Save queue to localStorage
 const saveQueueToStorage = (queue: string[]) => {
   try {
     localStorage.setItem(REPORT_QUEUE_KEY, JSON.stringify(queue))
@@ -157,27 +157,27 @@ const fetchNews = async (symbol: string): Promise<NewsItem[]> => {
 
 const fetchTechnicalIndicators = async (symbol: string): Promise<TechnicalIndicators> => {
   try {
-    // 获取 SMA (Simple Moving Average)
+    // Get SMA (Simple Moving Average)
     const smaUrl = `https://financialmodelingprep.com/api/v3/technical_indicator/1day/${symbol}?period=20&type=sma&apikey=${FMP_API_KEY}`
     const smaRes = await fetch(smaUrl)
     const smaData = await smaRes.json()
 
-    // 获取 EMA (Exponential Moving Average)
+    // Get EMA (Exponential Moving Average)
     const emaUrl = `https://financialmodelingprep.com/api/v3/technical_indicator/1day/${symbol}?period=20&type=ema&apikey=${FMP_API_KEY}`
     const emaRes = await fetch(emaUrl)
     const emaData = await emaRes.json()
 
-    // 获取 RSI (Relative Strength Index)
+    // Get RSI (Relative Strength Index)
     const rsiUrl = `https://financialmodelingprep.com/api/v3/technical_indicator/1day/${symbol}?period=14&type=rsi&apikey=${FMP_API_KEY}`
     const rsiRes = await fetch(rsiUrl)
     const rsiData = await rsiRes.json()
 
-    // 获取 MACD (Moving Average Convergence Divergence)
+    // Get MACD (Moving Average Convergence Divergence)
     const macdUrl = `https://financialmodelingprep.com/api/v3/technical_indicator/1day/${symbol}?type=macd&apikey=${FMP_API_KEY}`
     const macdRes = await fetch(macdUrl)
     const macdData = await macdRes.json()
 
-    // 分析指标信号
+    // Analyze indicator signals
     const getSMASignal = (sma: number, price: number) => {
       if (price > sma) return 'bullish'
       if (price < sma) return 'bearish'
@@ -209,7 +209,7 @@ const fetchTechnicalIndicators = async (symbol: string): Promise<TechnicalIndica
     const latestSignal = macdData[0]?.signal || 0
     const latestPrice = smaData[0]?.close || 0
 
-    // 打印原始数据
+    // Print raw data
     console.log('=== Technical Indicators Raw Data ===')
     console.log('SMA Data:', smaData[0])
     console.log('EMA Data:', emaData[0])
@@ -238,7 +238,7 @@ const fetchTechnicalIndicators = async (symbol: string): Promise<TechnicalIndica
       }
     }
 
-    // 打印处理后的指标数据
+    // Print processed indicator data
     console.log('=== Processed Technical Indicators ===')
     console.log('SMA:', {
       value: indicators.sma.value.toFixed(2),
@@ -270,63 +270,63 @@ const fetchTechnicalIndicators = async (symbol: string): Promise<TechnicalIndica
 const analyzeTechnicalIndicators = (indicators: TechnicalIndicators): string => {
   const signals = []
   
-  // SMA 分析
-  signals.push(`【SMA(20) 分析】
-- 当前值: ${indicators.sma.value.toFixed(2)}
-- 当前价格: ${indicators.sma.price.toFixed(2)}
-- 信号: ${indicators.sma.signal === 'bullish' ? '看涨' : indicators.sma.signal === 'bearish' ? '看跌' : '中性'}
+  // SMA Analysis
+  signals.push(`【SMA(20) Analysis】
+- Current Value: ${indicators.sma.value.toFixed(2)}
+- Current Price: ${indicators.sma.price.toFixed(2)}
+- Signal: ${indicators.sma.signal === 'bullish' ? 'Bullish' : indicators.sma.signal === 'bearish' ? 'Bearish' : 'Neutral'}
 
-SMA(20)是20日简单移动平均线，反映中期价格趋势：
-- 计算：取最近20个交易日的收盘价之和除以20
-- 趋势判断：价格>SMA为上升趋势，价格<SMA为下降趋势
-- 交易信号：价格突破SMA可视为趋势转变信号`)
+SMA(20) is a 20-day Simple Moving Average that reflects medium-term price trends:
+- Calculation: Sum of the last 20 trading days' closing prices divided by 20
+- Trend Judgment: Price > SMA indicates uptrend, Price < SMA indicates downtrend
+- Trading Signal: Price breaking through SMA can be considered a trend change signal`)
 
-  // EMA 分析
-  signals.push(`【EMA(20) 分析】
-- 当前值: ${indicators.ema.value.toFixed(2)}
-- 当前价格: ${indicators.ema.price.toFixed(2)}
-- 信号: ${indicators.ema.signal === 'bullish' ? '看涨' : indicators.ema.signal === 'bearish' ? '看跌' : '中性'}
+  // EMA Analysis
+  signals.push(`【EMA(20) Analysis】
+- Current Value: ${indicators.ema.value.toFixed(2)}
+- Current Price: ${indicators.ema.price.toFixed(2)}
+- Signal: ${indicators.ema.signal === 'bullish' ? 'Bullish' : indicators.ema.signal === 'bearish' ? 'Bearish' : 'Neutral'}
 
-EMA(20)是20日指数移动平均线，相比SMA对近期价格变化更敏感：
-- 计算：赋予近期价格更高权重，平滑处理历史数据
-- 趋势判断：价格>EMA为上升趋势，价格<EMA为下降趋势
-- 与SMA差异：EMA反应更快，但可能产生更多假信号`)
+EMA(20) is a 20-day Exponential Moving Average, more sensitive to recent price changes than SMA:
+- Calculation: Gives higher weight to recent prices, smoothing historical data
+- Trend Judgment: Price > EMA indicates uptrend, Price < EMA indicates downtrend
+- Difference from SMA: EMA reacts faster but may generate more false signals`)
 
-  // RSI 分析
-  signals.push(`【RSI(14) 分析】
-- 当前值: ${indicators.rsi.value.toFixed(2)}
-- 信号: ${indicators.rsi.signal === 'overbought' ? '超买' : indicators.rsi.signal === 'oversold' ? '超卖' : '中性'}
+  // RSI Analysis
+  signals.push(`【RSI(14) Analysis】
+- Current Value: ${indicators.rsi.value.toFixed(2)}
+- Signal: ${indicators.rsi.signal === 'overbought' ? 'Overbought' : indicators.rsi.signal === 'oversold' ? 'Oversold' : 'Neutral'}
 
-RSI(14)是14日相对强弱指标，衡量价格动量：
-- 计算：RSI = 100 - (100 / (1 + RS))，其中RS = 平均上涨幅度/平均下跌幅度
-- 区间解读：
-  * >70：超买区域，可能回调
-  * <30：超卖区域，可能反弹
-  * 30-70：中性区域，趋势延续
-- 交易信号：超买/超卖区域可作为反向交易参考`)
+RSI(14) is a 14-day Relative Strength Index that measures price momentum:
+- Calculation: RSI = 100 - (100 / (1 + RS)), where RS = Average Gain / Average Loss
+- Range Interpretation:
+  * >70: Overbought zone, possible pullback
+  * <30: Oversold zone, possible bounce
+  * 30-70: Neutral zone, trend continuation
+- Trading Signal: Overbought/Oversold zones can be used as counter-trend trading references`)
 
-  // MACD 分析
-  signals.push(`【MACD 分析】
-- MACD值: ${indicators.macd.value.toFixed(2)}
-- 信号: ${indicators.macd.signal === 'bullish' ? '看涨' : indicators.macd.signal === 'bearish' ? '看跌' : '中性'}
+  // MACD Analysis
+  signals.push(`【MACD Analysis】
+- MACD Value: ${indicators.macd.value.toFixed(2)}
+- Signal: ${indicators.macd.signal === 'bullish' ? 'Bullish' : indicators.macd.signal === 'bearish' ? 'Bearish' : 'Neutral'}
 
-MACD是移动平均线趋势指标：
-- 计算：
-  * MACD线 = EMA(12) - EMA(26)
-  * 信号线 = MACD的9日EMA
-  * 柱状图 = MACD线 - 信号线
-- 交易信号：
-  * 柱状图由负转正：可能上涨
-  * 柱状图由正转负：可能下跌
-  * MACD线上穿信号线：买入信号
-  * MACD线下穿信号线：卖出信号`)
+MACD is a Moving Average Convergence Divergence trend indicator:
+- Calculation:
+  * MACD Line = EMA(12) - EMA(26)
+  * Signal Line = 9-day EMA of MACD
+  * Histogram = MACD Line - Signal Line
+- Trading Signals:
+  * Histogram turning from negative to positive: Possible uptrend
+  * Histogram turning from positive to negative: Possible downtrend
+  * MACD Line crossing above Signal Line: Buy signal
+  * MACD Line crossing below Signal Line: Sell signal`)
 
   return signals.join('\n\n')
 }
 
 const analyzeNews = async (news: NewsItem[], technicalIndicators?: TechnicalIndicators): Promise<NewsAnalysis> => {
   try {
-    // 只取前5条新闻
+    // Take only first 5 news items
     const topNews = news.slice(0, 5)
     const titles = topNews.map(item => ({
       title: item.title,
@@ -404,25 +404,25 @@ Please respond in the following format:
 }
 
 const calculateStockScore = (indicators: TechnicalIndicators): StockScore => {
-  // 趋势强度 (0-100)
+  // Trend strength (0-100)
   const trendStrength = indicators.sma.signal === 'bullish' && indicators.ema.signal === 'bullish' ? 100 :
     indicators.sma.signal === 'bearish' && indicators.ema.signal === 'bearish' ? 0 :
     indicators.sma.signal === 'bullish' || indicators.ema.signal === 'bullish' ? 75 : 25
 
-  // 动量强度 (0-100)
+  // Momentum strength (0-100)
   const momentumStrength = indicators.rsi.signal === 'oversold' ? 0 :
     indicators.rsi.signal === 'overbought' ? 100 :
     indicators.rsi.value
 
-  // MACD强度 (0-100)
+  // MACD strength (0-100)
   const macdStrength = indicators.macd.signal === 'bullish' ? 100 :
     indicators.macd.signal === 'bearish' ? 0 : 50
 
-  // 价格相对强度 (0-100)
+  // Price relative strength (0-100)
   const priceStrength = ((indicators.sma.price - indicators.sma.value) / indicators.sma.value) * 100
   const normalizedPriceStrength = Math.min(Math.max(priceStrength + 50, 0), 100)
 
-  // 波动性 (0-100，越低越好)
+  // Volatility (0-100, lower is better)
   const volatility = Math.abs(indicators.macd.value) * 10
   const normalizedVolatility = Math.min(Math.max(100 - volatility, 0), 100)
 
@@ -437,10 +437,10 @@ const calculateStockScore = (indicators: TechnicalIndicators): StockScore => {
 
 const createRadarChartData = (score: StockScore) => {
   return {
-    labels: ['趋势强度', '动量强度', 'MACD强度', '价格强度', '稳定性'],
+    labels: ['Trend Strength', 'Momentum Strength', 'MACD Strength', 'Price Strength', 'Stability'],
     datasets: [
       {
-        label: '技术指标评分',
+        label: 'Technical Indicator Score',
         data: [
           score.trendStrength,
           score.momentumStrength,
@@ -490,14 +490,14 @@ const AIReport = () => {
   const watchlist = useWatchlistStore((state) => state.watchlist)
   const loadWatchlist = useWatchlistStore((state) => state.loadWatchlist)
 
-  // 获取去重后的投资组合
+  // Get deduplicated portfolio
   const uniqueInvestments = investments.reduce((acc, current) => {
     const existingIndex = acc.findIndex(item => item.stockCode === current.stockCode)
     if (existingIndex === -1) {
-      // 如果股票不存在，添加它
+      // If stock doesn't exist, add it
       acc.push(current)
     } else {
-      // 如果股票已存在，比较购买日期，保留最新的记录
+      // If stock exists, compare purchase dates, keep the latest record
       const existing = acc[existingIndex]
       if (new Date(current.purchaseDate) > new Date(existing.purchaseDate)) {
         acc[existingIndex] = current
@@ -506,7 +506,7 @@ const AIReport = () => {
     return acc
   }, [] as typeof investments)
 
-  // 初始化时加载已保存的报告
+  // Initialize by loading saved reports
   useEffect(() => {
     const savedReports = loadReportsFromStorage()
     savedReports.forEach((value, key) => {
@@ -514,7 +514,7 @@ const AIReport = () => {
     })
   }, [])
 
-  // 处理报告队列
+  // Process report queue
   useEffect(() => {
     const processQueue = async () => {
       if (processingQueue) return
@@ -530,7 +530,7 @@ const AIReport = () => {
         const technicalIndicators = await fetchTechnicalIndicators(symbol)
         const analysis = await analyzeNews(newsData, technicalIndicators)
         
-        // 更新缓存
+        // Update cache
         const now = Date.now()
         cache.set(symbol, {
           news: newsData,
@@ -539,14 +539,14 @@ const AIReport = () => {
           timestamp: now
         })
 
-        // 保存到 localStorage
+        // Save to localStorage
         saveReportsToStorage(cache)
 
-        // 更新队列
+        // Update queue
         const newQueue = queue.slice(1)
         saveQueueToStorage(newQueue)
 
-        // 如果当前选中的股票就是正在处理的股票，更新显示
+        // If the currently selected stock is the one being processed, update display
         if (selectedStock === symbol) {
           setNews(newsData)
           setNewsAnalysis(analysis)
@@ -561,32 +561,32 @@ const AIReport = () => {
     processQueue()
   }, [processingQueue, selectedStock])
 
-  // 初始化数据并开始生成报告
+  // Initialize data and start generating report
   useEffect(() => {
     const loadData = async () => {
       try {
         await loadInvestments()
         await loadWatchlist()
         
-        // 获取所有需要生成报告的股票代码
+        // Get all stocks that need to generate reports
         const allStocks = new Set([
           ...uniqueInvestments.map(inv => inv.stockCode),
           ...watchlist.map(stock => stock.symbol)
         ])
 
-        // 检查哪些股票需要更新报告
+        // Check which stocks need to update reports
         const now = Date.now()
         const queue = Array.from(allStocks).filter(symbol => {
           const cached = cache.get(symbol)
           return !cached || (now - cached.timestamp) >= CACHE_DURATION
         })
 
-        // 保存队列
+        // Save queue
         saveQueueToStorage(queue)
 
-        // 默认显示 AAPL 的新闻
+        // Default display AAPL news
         setSelectedStock('AAPL')
-        // 默认展开投资组合部分
+        // Default expand portfolio section
         setExpandedSection('portfolio')
       } catch (error) {
         console.error('Error loading data:', error)
@@ -595,17 +595,17 @@ const AIReport = () => {
     loadData()
   }, [loadInvestments, loadWatchlist])
 
-  // 获取股票新闻
+  // Get stock news
   useEffect(() => {
     const loadNews = async () => {
       if (!selectedStock) return
       
-      // 检查缓存
+      // Check cache
       const cachedData = cache.get(selectedStock)
       const now = Date.now()
       
       if (cachedData && (now - cachedData.timestamp) < CACHE_DURATION) {
-        // 使用缓存的数据
+        // Use cached data
         setNews(cachedData.news)
         setNewsAnalysis(cachedData.analysis)
         if (cachedData.technicalIndicators) {
@@ -615,7 +615,7 @@ const AIReport = () => {
         return
       }
       
-      // 如果缓存中没有数据或已过期，将股票添加到队列
+      // If cache doesn't have data or expired, add stock to queue
       const queue = loadQueueFromStorage()
       if (!queue.includes(selectedStock)) {
         queue.push(selectedStock)
@@ -630,11 +630,11 @@ const AIReport = () => {
         const analysis = await analyzeNews(newsData, technicalIndicators)
         setNewsAnalysis(analysis)
         
-        // 计算并设置股票分数
+        // Calculate and set stock score
         const score = calculateStockScore(technicalIndicators)
         setStockScore(score)
         
-        // 更新缓存
+        // Update cache
         cache.set(selectedStock, {
           news: newsData,
           analysis,
@@ -642,7 +642,7 @@ const AIReport = () => {
           timestamp: now
         })
         
-        // 保存到 localStorage
+        // Save to localStorage
         saveReportsToStorage(cache)
       } catch (error) {
         console.error('Error loading news:', error)
@@ -672,7 +672,7 @@ const AIReport = () => {
               className="w-full px-4 py-2 flex items-center justify-between hover:bg-gray-50"
               onClick={() => toggleSection('portfolio')}
             >
-              <span className="font-medium">我的投资组合</span>
+              <span className="font-medium">My Portfolio</span>
               {expandedSection === 'portfolio' ? (
                 <ChevronDownIcon className="w-5 h-5" />
               ) : (
@@ -682,7 +682,7 @@ const AIReport = () => {
             {expandedSection === 'portfolio' && (
               <div className="px-4 py-2 border-t">
                 {uniqueInvestments.length === 0 ? (
-                  <p className="text-gray-500 text-sm">暂无投资股票</p>
+                  <p className="text-gray-500 text-sm">No investments yet</p>
                 ) : (
                   <ul className="space-y-1">
                     {uniqueInvestments.map((investment) => (
@@ -708,7 +708,7 @@ const AIReport = () => {
               className="w-full px-4 py-2 flex items-center justify-between hover:bg-gray-50"
               onClick={() => toggleSection('watchlist')}
             >
-              <span className="font-medium">关注列表</span>
+              <span className="font-medium">Watchlist</span>
               {expandedSection === 'watchlist' ? (
                 <ChevronDownIcon className="w-5 h-5" />
               ) : (
@@ -718,7 +718,7 @@ const AIReport = () => {
             {expandedSection === 'watchlist' && (
               <div className="px-4 py-2 border-t">
                 {watchlist.length === 0 ? (
-                  <p className="text-gray-500 text-sm">暂无关注股票</p>
+                  <p className="text-gray-500 text-sm">No stocks in watchlist</p>
                 ) : (
                   <ul className="space-y-1">
                     {watchlist.map((stock) => (
@@ -742,15 +742,15 @@ const AIReport = () => {
 
       {/* News Section */}
       <div className="flex-1 bg-white shadow-lg rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-4">相关新闻与分析</h2>
+        <h2 className="text-lg font-semibold mb-4">Related News & Analysis</h2>
         {loading ? (
-          <p className="text-gray-500">加载中...</p>
+          <p className="text-gray-500">Loading...</p>
         ) : newsAnalysis ? (
           <div className="space-y-6">
             {/* Radar Chart */}
             {stockScore ? (
               <div className="bg-white p-4 rounded-lg border">
-                <h3 className="font-medium mb-4 text-center">技术指标综合评分</h3>
+                <h3 className="font-medium mb-4 text-center">Technical Indicator Score</h3>
                 <div className="w-full max-w-md mx-auto" style={{ height: '400px' }}>
                   <Radar 
                     data={createRadarChartData(stockScore)} 
@@ -762,23 +762,23 @@ const AIReport = () => {
                   />
                 </div>
                 <div className="mt-4 text-sm text-gray-600 text-center">
-                  <p>评分说明：</p>
+                  <p>Score Description:</p>
                   <ul className="list-disc list-inside">
-                    <li>趋势强度：基于SMA和EMA的趋势判断</li>
-                    <li>动量强度：基于RSI的动量指标</li>
-                    <li>MACD强度：基于MACD的趋势信号</li>
-                    <li>价格强度：当前价格相对均线的位置</li>
-                    <li>稳定性：价格波动的稳定性评估</li>
+                    <li>Trend Strength: Based on SMA and EMA trend analysis</li>
+                    <li>Momentum Strength: Based on RSI momentum indicator</li>
+                    <li>MACD Strength: Based on MACD trend signals</li>
+                    <li>Price Strength: Current price position relative to moving averages</li>
+                    <li>Stability: Assessment of price volatility stability</li>
                   </ul>
                 </div>
               </div>
             ) : (
-              <div className="text-gray-500 text-center">正在计算技术指标评分...</div>
+              <div className="text-gray-500 text-center">Calculating technical indicator scores...</div>
             )}
 
             {/* News Titles */}
             <div>
-              <h3 className="font-medium mb-2">最新新闻标题：</h3>
+              <h3 className="font-medium mb-2">Latest News Headlines:</h3>
               <ul className="space-y-2">
                 {newsAnalysis.titles.map((item, index) => (
                   <li key={index} className="text-sm">
@@ -797,14 +797,14 @@ const AIReport = () => {
             
             {/* Analysis */}
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium mb-2 text-blue-800">新闻分析与投资建议：</h3>
+              <h3 className="font-medium mb-2 text-blue-800">News Analysis & Investment Advice:</h3>
               <div className="text-sm text-blue-900 whitespace-pre-line">
                 {newsAnalysis.advice}
               </div>
             </div>
           </div>
         ) : (
-          <p className="text-gray-500">暂无相关新闻</p>
+          <p className="text-gray-500">No related news available</p>
         )}
       </div>
     </div>

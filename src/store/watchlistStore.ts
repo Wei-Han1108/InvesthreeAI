@@ -46,19 +46,19 @@ const useWatchlistStore = create<WatchlistStore>((set) => ({
       const user = await authService.getCurrentUser()
       if (!user) throw new Error('User not authenticated')
       
-      // 检查是否已经存在
+      // Check if already exists
       const currentWatchlist = useWatchlistStore.getState().watchlist
       if (currentWatchlist.some(item => item.symbol === symbol)) {
         return
       }
 
-      // 获取股票当前价格
+      // Get current stock price
       const response = await fetch(
         `https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=8CaGJ1ELvam7xuTKGk7YEPlna7HB2gWc`
       )
       const [stockData] = await response.json()
 
-      // 保存到数据库
+      // Save to database
       await watchlistService.addItem(user.getUsername(), {
         symbol,
         name,
@@ -67,7 +67,7 @@ const useWatchlistStore = create<WatchlistStore>((set) => ({
         changePercent: stockData.changesPercentage
       })
 
-      // 更新本地状态
+      // Update local state
       set((state) => ({
         watchlist: [...state.watchlist, {
           symbol,
@@ -88,10 +88,10 @@ const useWatchlistStore = create<WatchlistStore>((set) => ({
       const user = await authService.getCurrentUser()
       if (!user) throw new Error('User not authenticated')
 
-      // 从数据库删除
+      // Delete from database
       await watchlistService.removeItem(user.getUsername(), symbol)
 
-      // 更新本地状态
+      // Update local state
       set((state) => ({
         watchlist: state.watchlist.filter(item => item.symbol !== symbol)
       }))
@@ -114,7 +114,7 @@ const useWatchlistStore = create<WatchlistStore>((set) => ({
       )
       const data = await response.json()
 
-      // 更新数据库中的价格
+      // Update price in database
       for (const stock of data) {
         await watchlistService.updateItem(user.getUsername(), stock.symbol, {
           price: stock.price,
@@ -123,7 +123,7 @@ const useWatchlistStore = create<WatchlistStore>((set) => ({
         })
       }
 
-      // 更新本地状态
+      // Update local state
       set((state) => ({
         watchlist: state.watchlist.map(item => {
           const stockData = data.find((stock: any) => stock.symbol === item.symbol)

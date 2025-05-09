@@ -20,18 +20,18 @@ const AskAI = () => {
   const [expandedSection, setExpandedSection] = useState<'portfolio' | 'watchlist' | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
-  // 获取投资组合和观察列表数据
+  // Get portfolio and watchlist data
   const investments = useInvestmentStore((state) => state.investments)
   const watchlist = useWatchlistStore((state) => state.watchlist)
 
-  // 获取去重后的投资组合
+  // Get deduplicated portfolio
   const uniqueInvestments = investments.reduce((acc, current) => {
     const existingIndex = acc.findIndex(item => item.stockCode === current.stockCode)
     if (existingIndex === -1) {
-      // 如果股票不存在，添加它
+      // If stock doesn't exist, add it
       acc.push(current)
     } else {
-      // 如果股票已存在，比较购买日期，保留最新的记录
+      // If stock exists, compare purchase dates, keep the latest record
       const existing = acc[existingIndex]
       if (new Date(current.purchaseDate) > new Date(existing.purchaseDate)) {
         acc[existingIndex] = current
@@ -40,7 +40,7 @@ const AskAI = () => {
     return acc
   }, [] as typeof investments)
 
-  // 自动滚动到最新消息
+  // Auto scroll to latest message
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -62,7 +62,7 @@ const AskAI = () => {
     e.preventDefault()
     if (!question.trim()) return
 
-    // 添加用户消息
+    // Add user message
     const userMessage: Message = {
       role: 'user',
       content: question,
@@ -76,7 +76,7 @@ const AskAI = () => {
     try {
       const response = await aiService.askQuestion(question, uniqueInvestments, watchlist, survey)
       
-      // 添加AI回复
+      // Add AI response
       const assistantMessage: Message = {
         role: 'assistant',
         content: response,
@@ -84,7 +84,7 @@ const AskAI = () => {
       }
       setMessages(prev => [...prev, assistantMessage])
     } catch (error) {
-      setError('获取答案时出错，请稍后重试。')
+      setError('Error getting answer. Please try again later.')
       console.error('Error:', error)
     } finally {
       setIsLoading(false)
@@ -97,17 +97,17 @@ const AskAI = () => {
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      {/* 左侧边栏 */}
+      {/* Left Sidebar */}
       <div className="w-64 bg-gray-50 border-r p-4 flex flex-col">
-        <h2 className="text-lg font-semibold mb-4">投资信息</h2>
+        <h2 className="text-lg font-semibold mb-4">Investment Information</h2>
         
-        {/* 投资组合部分 */}
+        {/* Portfolio Section */}
         <div className="mb-4">
           <button
             className="w-full flex items-center justify-between p-2 rounded hover:bg-gray-100"
             onClick={() => toggleSection('portfolio')}
           >
-            <span className="font-medium">投资组合</span>
+            <span className="font-medium">Portfolio</span>
             {expandedSection === 'portfolio' ? (
               <ChevronDownIcon className="w-4 h-4" />
             ) : (
@@ -124,24 +124,24 @@ const AskAI = () => {
                 >
                   <div className="font-medium">{inv.stockName}</div>
                   <div className="text-gray-600">
-                    {inv.quantity}股 @ ${inv.purchasePrice}
+                    {inv.quantity} shares @ ${inv.purchasePrice}
                   </div>
                 </div>
               ))}
               {uniqueInvestments.length === 0 && (
-                <div className="text-sm text-gray-500 p-2">暂无投资</div>
+                <div className="text-sm text-gray-500 p-2">No investments yet</div>
               )}
             </div>
           )}
         </div>
 
-        {/* 观察列表部分 */}
+        {/* Watchlist Section */}
         <div>
           <button
             className="w-full flex items-center justify-between p-2 rounded hover:bg-gray-100"
             onClick={() => toggleSection('watchlist')}
           >
-            <span className="font-medium">观察列表</span>
+            <span className="font-medium">Watchlist</span>
             {expandedSection === 'watchlist' ? (
               <ChevronDownIcon className="w-4 h-4" />
             ) : (
@@ -163,16 +163,16 @@ const AskAI = () => {
                 </div>
               ))}
               {watchlist.length === 0 && (
-                <div className="text-sm text-gray-500 p-2">观察列表为空</div>
+                <div className="text-sm text-gray-500 p-2">Watchlist is empty</div>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* 聊天区域 */}
+      {/* Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* 消息列表 */}
+        {/* Message List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message, index) => (
             <div
@@ -207,35 +207,35 @@ const AskAI = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* 输入区域 */}
+        {/* Input Area */}
         <div className="border-t p-4 bg-white">
-          {/* 建议问题 */}
+          {/* Suggested Questions */}
           <div className="mb-4 flex flex-wrap gap-2">
             {messages.length === 0 && (
               <>
                 <button
-                  onClick={() => setQuestion("分析一下我的投资组合表现如何？")}
+                  onClick={() => setQuestion("How is my portfolio performing?")}
                   className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
                 >
-                  分析一下我的投资组合表现如何？
+                  How is my portfolio performing?
                 </button>
                 <button
-                  onClick={() => setQuestion("我的观察列表中有哪些值得关注的机会？")}
+                  onClick={() => setQuestion("What opportunities should I watch in my watchlist?")}
                   className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
                 >
-                  我的观察列表中有哪些值得关注的机会？
+                  What opportunities should I watch in my watchlist?
                 </button>
                 <button
-                  onClick={() => setQuestion("如何优化我的投资组合配置？")}
+                  onClick={() => setQuestion("How can I optimize my portfolio allocation?")}
                   className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
                 >
-                  如何优化我的投资组合配置？
+                  How can I optimize my portfolio allocation?
                 </button>
                 <button
-                  onClick={() => setQuestion("最近市场有什么重要变化？")}
+                  onClick={() => setQuestion("What are the recent important market changes?")}
                   className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
                 >
-                  最近市场有什么重要变化？
+                  What are the recent important market changes?
                 </button>
               </>
             )}
@@ -246,7 +246,7 @@ const AskAI = () => {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              placeholder="输入您的问题..."
+              placeholder="Type your question..."
               rows={1}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -260,7 +260,7 @@ const AskAI = () => {
               disabled={isLoading || !question.trim()}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              发送
+              Send
             </button>
           </form>
           {error && (

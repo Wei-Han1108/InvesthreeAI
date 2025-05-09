@@ -86,7 +86,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
     if (defaultSymbol && defaultName) {
       setSelectedStock({ symbol: defaultSymbol, name: defaultName, exchange: '', exchangeShortName: '' })
       setSearchQuery(defaultName)
-      // 自动查当前价格
+      // Auto-fetch current price
       const fetchPrice = async () => {
         try {
           const response = await fetch(
@@ -108,7 +108,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
     setSearchQuery(stock.name)
     setShowResults(false)
 
-    // 获取当前价格
+    // Get current price
     try {
       console.log('Fetching current price for:', stock.symbol)
       const response = await fetch(
@@ -141,7 +141,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
       currentPrice
     })
 
-    // 重置表单
+    // Reset form
     setSearchQuery('')
     setSelectedStock(null)
     setShares('')

@@ -10,11 +10,11 @@ const getClient = () => {
     throw new Error('ID token not found. Please log in again.')
   }
 
-  // 检查 token 是否过期
+  // Check if token is expired
   const payload = JSON.parse(atob(idToken.split('.')[1]))
   const now = Math.floor(Date.now() / 1000)
   if (payload.exp && payload.exp < now) {
-    // token 已过期，清理并跳转登录
+    // Token expired, clear and redirect to login
     localStorage.removeItem('idToken')
     localStorage.removeItem('user')
     window.location.href = '/login'
@@ -44,7 +44,7 @@ const getClient = () => {
 export const investmentService = {
   async addInvestment(userId: string, investment: any) {
     const docClient = getClient()
-    // 获取当前用户的邮箱
+    // Get current user's email
     const user = JSON.parse(localStorage.getItem('user') || '{}')
     const params = {
       TableName: 'Investments',
@@ -121,7 +121,7 @@ export const investmentService = {
   async sellInvestment(userId: string, investmentId: string, sellQuantity: number, sellPrice: number, sellDate: string) {
     const docClient = getClient()
     
-    // 先获取当前投资记录
+    // Get current investment record
     const params = {
       TableName: 'Investments',
       Key: {
@@ -133,7 +133,7 @@ export const investmentService = {
     const investment = result.Item
     if (!investment) throw new Error('Investment not found')
     
-    // 获取同一股票代码的所有投资记录
+    // Get all investment records for the same stock code
     const stockParams = {
       TableName: 'Investments',
       FilterExpression: 'userId = :userId AND stockCode = :stockCode',
@@ -145,7 +145,7 @@ export const investmentService = {
     const stockResult = await docClient.send(new ScanCommand(stockParams))
     const stockInvestments = stockResult.Items || []
     
-    // 计算总买入和总卖出数量
+    // Calculate total buy and sell quantities
     const totalBuy = stockInvestments.reduce((sum, inv) => sum + (inv.quantity > 0 ? inv.quantity : 0), 0)
     const totalSell = stockInvestments.reduce((sum, inv) => sum + (inv.quantity < 0 ? Math.abs(inv.quantity) : 0), 0)
     const availableQuantity = totalBuy - totalSell
@@ -168,7 +168,7 @@ export const investmentService = {
     
     const profitLoss = (sellPrice - investment.purchasePrice) * sellQuantity
     
-    // 创建新的卖出记录
+    // Create new sell record
     const sellParams = {
       TableName: 'Investments',
       Item: {
@@ -177,9 +177,9 @@ export const investmentService = {
         email: investment.email,
         stockCode: investment.stockCode,
         stockName: investment.stockName,
-        quantity: -sellQuantity, // 使用负数表示卖出
-        purchasePrice: sellPrice, // 使用卖出价格
-        purchaseDate: sellDate,   // 使用卖出日期
+        quantity: -sellQuantity, // Use negative number to represent selling
+        purchasePrice: sellPrice, // Use sell price
+        purchaseDate: sellDate,   // Use sell date
         currentPrice: investment.currentPrice,
         profitLoss,
         createdAt: new Date().toISOString(),

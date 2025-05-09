@@ -36,7 +36,7 @@ const StockReport = () => {
           news
         })
       } catch (error) {
-        setError('获取报告数据时出错，请稍后重试。')
+        setError('Error fetching report data. Please try again later.')
         console.error('Error fetching report:', error)
       } finally {
         setLoading(false)
@@ -48,9 +48,9 @@ const StockReport = () => {
 
   return (
     <div className="flex h-screen">
-      {/* 侧边栏 */}
+      {/* Sidebar */}
       <div className="w-64 bg-gray-100 p-4">
-        <h2 className="text-lg font-semibold mb-4">观察列表</h2>
+        <h2 className="text-lg font-semibold mb-4">Watchlist</h2>
         <ul className="space-y-2">
           {watchlist.map((stock) => (
             <li
@@ -66,7 +66,7 @@ const StockReport = () => {
         </ul>
       </div>
 
-      {/* 报告内容 */}
+      {/* Report Content */}
       <div className="flex-1 p-6 overflow-auto">
         {loading ? (
           <div className="flex items-center justify-center h-full">
@@ -78,11 +78,11 @@ const StockReport = () => {
           </div>
         ) : report ? (
           <div className="space-y-6">
-            <h1 className="text-2xl font-bold">{report.symbol} 股票报告</h1>
+            <h1 className="text-2xl font-bold">{report.symbol} Stock Report</h1>
 
-            {/* 技术面分析 */}
+            {/* Technical Analysis */}
             <section className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">技术面分析</h2>
+              <h2 className="text-xl font-semibold mb-4">Technical Analysis</h2>
               <div className="grid grid-cols-4 gap-4">
                 {report.technicalAnalysis.slice(0, 1).map((data) => (
                   <>
@@ -107,19 +107,19 @@ const StockReport = () => {
               </div>
             </section>
 
-            {/* 波动率分析 */}
+            {/* Volatility Analysis */}
             <section className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">波动率分析</h2>
+              <h2 className="text-xl font-semibold mb-4">Volatility Analysis</h2>
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th className="px-4 py-2 text-left">日期</th>
-                      <th className="px-4 py-2 text-right">开盘</th>
-                      <th className="px-4 py-2 text-right">最高</th>
-                      <th className="px-4 py-2 text-right">最低</th>
-                      <th className="px-4 py-2 text-right">收盘</th>
-                      <th className="px-4 py-2 text-right">成交量</th>
+                      <th className="px-4 py-2 text-left">Date</th>
+                      <th className="px-4 py-2 text-right">Open</th>
+                      <th className="px-4 py-2 text-right">High</th>
+                      <th className="px-4 py-2 text-right">Low</th>
+                      <th className="px-4 py-2 text-right">Close</th>
+                      <th className="px-4 py-2 text-right">Volume</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -138,9 +138,9 @@ const StockReport = () => {
               </div>
             </section>
 
-            {/* 热点事件 */}
+            {/* Hot Events */}
             <section className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">热点事件</h2>
+              <h2 className="text-xl font-semibold mb-4">Hot Events</h2>
               <div className="space-y-4">
                 {report.news.map((item) => (
                   <div key={item.url} className="border-b pb-4">
@@ -160,7 +160,7 @@ const StockReport = () => {
           </div>
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
-            请从侧边栏选择一只股票
+            Please select a stock from the sidebar
           </div>
         )}
       </div>
