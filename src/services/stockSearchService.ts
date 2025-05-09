@@ -51,7 +51,7 @@ export const stockSearchService = {
         `https://financialmodelingprep.com/api/v3/historical-chart/1hour/${symbol}?apikey=${FMP_API_KEY}`
       )
       const data = await response.json()
-      return data.reverse() // 反转数据，让最新的数据在最后
+      return data.reverse() // Reverse data to have latest data at the end
     } catch (error) {
       console.error('Failed to get historical data:', error)
       return []

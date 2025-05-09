@@ -12,12 +12,17 @@ interface Investment {
   purchaseDate: string
   currentPrice: number
   createdAt: string
+  sellQuantity?: number
+  sellPrice?: number
+  sellDate?: string
+  profitLoss?: number
 }
 
 interface InvestmentStore {
   investments: Investment[]
   addInvestment: (investment: Omit<Investment, 'investmentId' | 'userId' | 'createdAt'>) => Promise<void>
   loadInvestments: () => Promise<void>
+  sellInvestment: (investmentId: string, sellQuantity: number, sellPrice: number, sellDate: string) => Promise<void>
 }
 
 const useInvestmentStore = create<InvestmentStore>((set) => ({
@@ -46,6 +51,19 @@ const useInvestmentStore = create<InvestmentStore>((set) => ({
       set({ investments })
     } catch (error) {
       console.error('Failed to load investments:', error)
+      throw error
+    }
+  },
+
+  sellInvestment: async (investmentId, sellQuantity, sellPrice, sellDate) => {
+    try {
+      const user = await authService.getCurrentUser()
+      if (!user) throw new Error('User not authenticated')
+      await investmentService.sellInvestment(user.getUsername(), investmentId, sellQuantity, sellPrice, sellDate)
+      const investments = await investmentService.getUserInvestments(user.getUsername())
+      set({ investments })
+    } catch (error) {
+      console.error('Failed to sell investment:', error)
       throw error
     }
   },

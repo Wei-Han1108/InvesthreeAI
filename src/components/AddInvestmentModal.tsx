@@ -13,6 +13,10 @@ interface AddInvestmentModalProps {
     purchaseDate: string
     currentPrice: number
   }) => void
+  defaultSymbol?: string
+  defaultName?: string
+  mode?: 'buy' | 'sell'
+  maxQuantity?: number
 }
 
 interface SearchResult {
@@ -22,7 +26,7 @@ interface SearchResult {
   exchangeShortName: string
 }
 
-const AddInvestmentModal = ({ isOpen, onClose, onAdd }: AddInvestmentModalProps) => {
+const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName, mode = 'buy', maxQuantity }: AddInvestmentModalProps) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [showResults, setShowResults] = useState(false)
@@ -78,13 +82,33 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd }: AddInvestmentModalProps)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  useEffect(() => {
+    if (defaultSymbol && defaultName) {
+      setSelectedStock({ symbol: defaultSymbol, name: defaultName, exchange: '', exchangeShortName: '' })
+      setSearchQuery(defaultName)
+      // Auto-fetch current price
+      const fetchPrice = async () => {
+        try {
+          const response = await fetch(
+            `https://financialmodelingprep.com/api/v3/quote/${defaultSymbol}?apikey=${import.meta.env.VITE_FMP_API_KEY}`
+          )
+          if (!response.ok) return
+          const [stockData] = await response.json()
+          setCurrentPrice(stockData.price)
+          setPurchasePrice(stockData.price)
+        } catch {}
+      }
+      fetchPrice()
+    }
+  }, [defaultSymbol, defaultName])
+
   const handleStockSelect = async (stock: SearchResult) => {
     console.log('Selected stock:', stock)
     setSelectedStock(stock)
     setSearchQuery(stock.name)
     setShowResults(false)
 
-    // 获取当前价格
+    // Get current price
     try {
       console.log('Fetching current price for:', stock.symbol)
       const response = await fetch(
@@ -117,7 +141,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd }: AddInvestmentModalProps)
       currentPrice
     })
 
-    // 重置表单
+    // Reset form
     setSearchQuery('')
     setSelectedStock(null)
     setShares('')
@@ -132,54 +156,60 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd }: AddInvestmentModalProps)
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">添加投资</h2>
+        <h2 className="text-xl font-semibold mb-4">Add Investment</h2>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              股票名称
-            </label>
-            <div ref={searchRef} className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onFocus={() => {
-                  console.log('Input focused')
-                  if (searchQuery.length >= 2) {
-                    setShowResults(true)
-                  }
-                }}
-                className="w-full px-3 py-2 border rounded-md"
-                placeholder="搜索股票..."
-              />
-              {showResults && searchResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-auto">
-                  {searchResults.map((result) => (
-                    <div
-                      key={result.symbol}
-                      className="p-2 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => handleStockSelect(result)}
-                    >
-                      <div className="font-medium">{result.symbol}</div>
-                      <div className="text-sm text-gray-500">{result.name}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {showResults && searchQuery.length >= 2 && searchResults.length === 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 p-2 text-gray-500">
-                  未找到匹配的股票
-                </div>
-              )}
+          {defaultSymbol && defaultName ? (
+            <>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Name</label>
+                <input type="text" value={defaultName} readOnly className="w-full px-3 py-2 border rounded-md bg-gray-50" />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Symbol</label>
+                <input type="text" value={defaultSymbol} readOnly className="w-full px-3 py-2 border rounded-md bg-gray-50" />
+              </div>
+            </>
+          ) : (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Stock Name</label>
+              <div ref={searchRef}>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onFocus={() => {
+                    if (searchQuery.length >= 2) setShowResults(true)
+                  }}
+                  className="w-full px-3 py-2 border rounded-md"
+                  placeholder="Search stocks..."
+                />
+                {showResults && searchResults.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-auto">
+                    {searchResults.map((result) => (
+                      <div
+                        key={result.symbol}
+                        className="p-2 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => handleStockSelect(result)}
+                      >
+                        <div className="font-medium">{result.symbol}</div>
+                        <div className="text-sm text-gray-500">{result.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showResults && searchQuery.length >= 2 && searchResults.length === 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 p-2 text-gray-500">
+                    No matching stocks found
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {selectedStock && (
             <>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  股票代码
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Symbol</label>
                 <input
                   type="text"
                   value={selectedStock.symbol}
@@ -189,9 +219,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd }: AddInvestmentModalProps)
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  购买价格
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Price</label>
                 <input
                   type="number"
                   value={purchasePrice}
@@ -203,23 +231,25 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd }: AddInvestmentModalProps)
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  数量
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
                 <input
                   type="number"
                   value={shares}
                   onChange={(e) => setShares(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md"
                   min="1"
+                  max={mode === 'sell' ? maxQuantity : undefined}
                   required
                 />
+                {mode === 'sell' && maxQuantity && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    Maximum sellable quantity: {maxQuantity}
+                  </p>
+                )}
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  购买日期
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label>
                 <input
                   type="date"
                   value={purchaseDate}
@@ -230,9 +260,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd }: AddInvestmentModalProps)
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  当前价格
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Price</label>
                 <input
                   type="number"
                   value={currentPrice}
@@ -249,14 +277,14 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd }: AddInvestmentModalProps)
               onClick={onClose}
               className="px-4 py-2 text-gray-700 border rounded-md hover:bg-gray-50"
             >
-              取消
+              Cancel
             </button>
             <button
               type="submit"
               disabled={!selectedStock || !shares}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              添加
+              Add
             </button>
           </div>
         </form>

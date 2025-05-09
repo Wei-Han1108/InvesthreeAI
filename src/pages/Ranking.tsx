@@ -21,7 +21,7 @@ const Ranking = () => {
       try {
         const allInvestments = await investmentService.getAllUsersInvestments()
 
-        // 按用户分组
+        // Group by user
         const userInvestments = allInvestments.reduce((acc: { [key: string]: any[] }, investment) => {
           if (!acc[investment.userId]) {
             acc[investment.userId] = []
@@ -30,29 +30,27 @@ const Ranking = () => {
           return acc
         }, {})
 
-        // 计算每个用户的性能
+        // Calculate performance for each user
         const userRankings = Object.entries(userInvestments).map(([userId, investments]) => {
           const performance = investmentService.calculateUserPerformance(investments)
-          // 从第一个投资记录中获取用户信息
           const userInfo = investments[0]
           return {
             userId,
-            email: userInfo?.email || '匿名用户',
+            email: userInfo?.email || 'Anonymous',
             ...performance,
           }
         })
 
-        // 按盈利率排序，只取前10名
+        // Sort by profit/loss percentage and take top 10
         userRankings.sort((a, b) => b.profitLossPercentage - a.profitLossPercentage)
         const topRankings = userRankings.slice(0, 10)
         setRankings(topRankings)
       } catch (error) {
-        console.error('获取排行榜数据失败:', error)
+        console.error('Failed to fetch ranking data:', error)
         if (error instanceof Error && error.message.includes('ID token not found')) {
-          // 如果token不存在，跳转到登录页
           navigate('/login')
         } else {
-          setError('获取排行榜数据失败，请稍后重试')
+          setError('Failed to fetch ranking data. Please try again later.')
         }
       } finally {
         setLoading(false)
@@ -82,26 +80,26 @@ const Ranking = () => {
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold">用户投资排行榜</h2>
+          <h2 className="text-lg font-semibold">Top Investor Rankings</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  排名
+                  Rank
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  邮箱
+                  Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  总投资
+                  Total Investment
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  当前价值
+                  Current Value
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  盈利率
+                  P/L %
                 </th>
               </tr>
             </thead>
@@ -135,4 +133,4 @@ const Ranking = () => {
   )
 }
 
-export default Ranking 
+export default Ranking

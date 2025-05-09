@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { FMP_API_KEY } from '../config'
 
-interface CommodityData {
+interface ETFData {
   symbol: string
   name: string
   price: number
   changesPercentage: number
-  exchange: string
-  open: number
-  high: number
-  low: number
+  marketCap: number
   volume: number
-  previousClose: number
+  avgVolume: number
+  sector: string
+  industry: string
+  exchange: string
 }
 
-const Commodities = () => {
-  const [commodityData, setCommodityData] = useState<CommodityData[]>([])
+const ETF = () => {
+  const [etfData, setEtfData] = useState<ETFData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,22 +25,22 @@ const Commodities = () => {
   const suggestTimeout = useRef<any>(null)
 
   useEffect(() => {
-    const fetchCommodityData = async () => {
+    const fetchETFData = async () => {
       setLoading(true)
       setError('')
       try {
-        const res = await fetch(`https://financialmodelingprep.com/api/v3/quotes/commodity?apikey=${FMP_API_KEY}`)
-        if (!res.ok) throw new Error('Failed to fetch commodity data')
+        const res = await fetch(`https://financialmodelingprep.com/api/v3/etf/list?apikey=${FMP_API_KEY}`)
+        if (!res.ok) throw new Error('Failed to fetch ETF data')
         const data = await res.json()
-        setCommodityData(data)
+        setEtfData(data)
       } catch (err: any) {
-        setError(err.message || 'Error loading commodity data')
+        setError(err.message || 'Error loading ETF data')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchCommodityData()
+    fetchETFData()
   }, [])
 
   const fetchSuggestions = async (query: string) => {
@@ -66,12 +66,12 @@ const Commodities = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`https://financialmodelingprep.com/api/v3/quote/${searchQuery}?apikey=${FMP_API_KEY}`)
-      if (!res.ok) throw new Error('Failed to fetch commodity data')
+      const res = await fetch(`https://financialmodelingprep.com/api/v3/etf/${searchQuery}?apikey=${FMP_API_KEY}`)
+      if (!res.ok) throw new Error('Failed to fetch ETF data')
       const data = await res.json()
-      setCommodityData(Array.isArray(data) ? data : [data])
+      setEtfData(Array.isArray(data) ? data : [data])
     } catch (err: any) {
-      setError(err.message || 'Error searching commodity')
+      setError(err.message || 'Error searching ETF')
     } finally {
       setLoading(false)
     }
@@ -90,7 +90,7 @@ const Commodities = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Commodities Market</h1>
+      <h1 className="text-2xl font-bold mb-4">ETF Market</h1>
       
       <form onSubmit={handleSearch} className="mb-4">
         <div className="relative" ref={suggestRef}>
@@ -107,7 +107,7 @@ const Commodities = () => {
                 setShowSuggestions(true)
               }, 300)
             }}
-            placeholder="Search commodities (e.g., GC for Gold)"
+            placeholder="Search ETFs (e.g., SPY)"
             className="w-full p-2 border rounded"
           />
           {showSuggestions && suggestions.length > 0 && (
@@ -150,31 +150,31 @@ const Commodities = () => {
                 <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-right">Price</th>
                 <th className="px-4 py-2 text-right">Change (%)</th>
-                <th className="px-4 py-2 text-right">Open</th>
-                <th className="px-4 py-2 text-right">High</th>
-                <th className="px-4 py-2 text-right">Low</th>
+                <th className="px-4 py-2 text-right">Market Cap</th>
                 <th className="px-4 py-2 text-right">Volume</th>
-                <th className="px-4 py-2 text-right">Previous Close</th>
+                <th className="px-4 py-2 text-right">Avg Volume</th>
+                <th className="px-4 py-2 text-left">Sector</th>
+                <th className="px-4 py-2 text-left">Industry</th>
                 <th className="px-4 py-2 text-left">Exchange</th>
               </tr>
             </thead>
             <tbody>
-              {commodityData.map((commodity) => (
-                <tr key={commodity.symbol} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2 font-bold">{commodity.symbol}</td>
-                  <td className="px-4 py-2">{commodity.name}</td>
-                  <td className="px-4 py-2 text-right">${commodity.price.toFixed(2)}</td>
+              {etfData.map((etf) => (
+                <tr key={etf.symbol} className="border-b hover:bg-gray-50">
+                  <td className="px-4 py-2 font-bold">{etf.symbol}</td>
+                  <td className="px-4 py-2">{etf.name}</td>
+                  <td className="px-4 py-2 text-right">${etf.price.toFixed(2)}</td>
                   <td className={`px-4 py-2 text-right font-semibold ${
-                    commodity.changesPercentage > 0 ? 'text-green-600' : commodity.changesPercentage < 0 ? 'text-red-600' : ''
+                    etf.changesPercentage > 0 ? 'text-green-600' : etf.changesPercentage < 0 ? 'text-red-600' : ''
                   }`}>
-                    {commodity.changesPercentage.toFixed(2)}%
+                    {etf.changesPercentage.toFixed(2)}%
                   </td>
-                  <td className="px-4 py-2 text-right">${commodity.open.toFixed(2)}</td>
-                  <td className="px-4 py-2 text-right">${commodity.high.toFixed(2)}</td>
-                  <td className="px-4 py-2 text-right">${commodity.low.toFixed(2)}</td>
-                  <td className="px-4 py-2 text-right">{commodity.volume.toLocaleString()}</td>
-                  <td className="px-4 py-2 text-right">${commodity.previousClose.toFixed(2)}</td>
-                  <td className="px-4 py-2">{commodity.exchange}</td>
+                  <td className="px-4 py-2 text-right">${etf.marketCap.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">{etf.volume.toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right">{etf.avgVolume.toLocaleString()}</td>
+                  <td className="px-4 py-2">{etf.sector || '-'}</td>
+                  <td className="px-4 py-2">{etf.industry || '-'}</td>
+                  <td className="px-4 py-2">{etf.exchange}</td>
                 </tr>
               ))}
             </tbody>
@@ -185,4 +185,4 @@ const Commodities = () => {
   )
 }
 
-export default Commodities 
+export default ETF 

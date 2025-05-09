@@ -10,11 +10,11 @@ const getClient = () => {
     throw new Error('ID token not found. Please log in again.')
   }
 
-  // 检查 token 是否过期
+  // Check if token is expired
   const payload = JSON.parse(atob(idToken.split('.')[1]))
   const now = Math.floor(Date.now() / 1000)
   if (payload.exp && payload.exp < now) {
-    // token 已过期，清理并跳转登录
+    // Token expired, clear and redirect to login
     localStorage.removeItem('idToken')
     localStorage.removeItem('user')
     window.location.href = '/login'
