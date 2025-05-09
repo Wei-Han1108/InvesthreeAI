@@ -97,80 +97,7 @@ const AskAI = () => {
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      {/* Left Sidebar */}
-      <div className="w-64 bg-gray-50 border-r p-4 flex flex-col">
-        <h2 className="text-lg font-semibold mb-4">Investment Information</h2>
-        
-        {/* Portfolio Section */}
-        <div className="mb-4">
-          <button
-            className="w-full flex items-center justify-between p-2 rounded hover:bg-gray-100"
-            onClick={() => toggleSection('portfolio')}
-          >
-            <span className="font-medium">Portfolio</span>
-            {expandedSection === 'portfolio' ? (
-              <ChevronDownIcon className="w-4 h-4" />
-            ) : (
-              <ChevronRightIcon className="w-4 h-4" />
-            )}
-          </button>
-          
-          {expandedSection === 'portfolio' && (
-            <div className="mt-2 pl-2 space-y-1">
-              {uniqueInvestments.map((inv) => (
-                <div
-                  key={inv.stockCode}
-                  className="p-2 text-sm rounded hover:bg-gray-100"
-                >
-                  <div className="font-medium">{inv.stockName}</div>
-                  <div className="text-gray-600">
-                    {inv.quantity} shares @ ${inv.purchasePrice}
-                  </div>
-                </div>
-              ))}
-              {uniqueInvestments.length === 0 && (
-                <div className="text-sm text-gray-500 p-2">No investments yet</div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Watchlist Section */}
-        <div>
-          <button
-            className="w-full flex items-center justify-between p-2 rounded hover:bg-gray-100"
-            onClick={() => toggleSection('watchlist')}
-          >
-            <span className="font-medium">Watchlist</span>
-            {expandedSection === 'watchlist' ? (
-              <ChevronDownIcon className="w-4 h-4" />
-            ) : (
-              <ChevronRightIcon className="w-4 h-4" />
-            )}
-          </button>
-          
-          {expandedSection === 'watchlist' && (
-            <div className="mt-2 pl-2 space-y-1">
-              {watchlist.map((stock) => (
-                <div
-                  key={stock.symbol}
-                  className="p-2 text-sm rounded hover:bg-gray-100"
-                >
-                  <div className="font-medium">{stock.name}</div>
-                  <div className="text-gray-600">
-                    ${stock.price} ({stock.changePercent > 0 ? '+' : ''}{stock.changePercent}%)
-                  </div>
-                </div>
-              ))}
-              {watchlist.length === 0 && (
-                <div className="text-sm text-gray-500 p-2">Watchlist is empty</div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Chat Area */}
+      {/* Only Chat Area, sidebar removed */}
       <div className="flex-1 flex flex-col">
         {/* Message List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -214,28 +141,28 @@ const AskAI = () => {
             {messages.length === 0 && (
               <>
                 <button
-                  onClick={() => setQuestion("How is my portfolio performing?")}
+                  onClick={() => setQuestion("What are the best stocks to buy right now?")}
                   className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
                 >
-                  How is my portfolio performing?
+                  What are the best stocks to buy right now?
                 </button>
                 <button
-                  onClick={() => setQuestion("What opportunities should I watch in my watchlist?")}
+                  onClick={() => setQuestion("Should I sell any stocks in my portfolio?")}
                   className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
                 >
-                  What opportunities should I watch in my watchlist?
+                  Should I sell any stocks in my portfolio?
                 </button>
                 <button
-                  onClick={() => setQuestion("How can I optimize my portfolio allocation?")}
+                  onClick={() => setQuestion("What is the outlook for the tech sector?")}
                   className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
                 >
-                  How can I optimize my portfolio allocation?
+                  What is the outlook for the tech sector?
                 </button>
                 <button
-                  onClick={() => setQuestion("What are the recent important market changes?")}
+                  onClick={() => setQuestion("How can I reduce risk in my investments?")}
                   className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
                 >
-                  What are the recent important market changes?
+                  How can I reduce risk in my investments?
                 </button>
               </>
             )}

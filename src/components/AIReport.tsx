@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import useInvestmentStore from '../store/investmentStore'
 import useWatchlistStore from '../store/watchlistStore'
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
-import { Radar } from 'react-chartjs-2'
+import { Radar, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -339,7 +339,7 @@ const analyzeNews = async (news: NewsItem[], technicalIndicators?: TechnicalIndi
       technicalAnalysis = analyzeTechnicalIndicators(technicalIndicators)
     }
     
-    const prompt = `Please analyze the following news and technical indicators, then provide investment advice (total length should not exceed 200 words):
+    const prompt = `Please provide a comprehensive, multi-faceted analysis of the following news and technical indicators, then give detailed investment advice (total length should not exceed 300 words):
 
 News Titles:
 ${titles.map(t => t.title).join('\n')}
@@ -357,8 +357,20 @@ Please respond in the following format:
 【Technical Analysis】
 (If available, brief analysis of technical indicators)
 
+【Market Sentiment】
+(Analysis of overall market sentiment and sector trends)
+
+【Risk Factors】
+(Key risk factors to consider)
+
+【Historical Performance】
+(Brief overview of historical performance)
+
+【Future Outlook】
+(Predictions and future outlook)
+
 【Investment Advice】
-(Specific advice based on news and technical analysis)`
+(Specific, detailed advice based on all the above factors)`
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -663,148 +675,37 @@ const AIReport = () => {
   }
 
   return (
-    <div className="flex gap-8">
-      <div className="w-64 bg-white shadow-lg rounded-lg p-4">
-        <div className="space-y-2">
-          {/* Portfolio Section */}
-          <div className="border rounded-lg">
-            <button
-              className="w-full px-4 py-2 flex items-center justify-between hover:bg-gray-50"
-              onClick={() => toggleSection('portfolio')}
-            >
-              <span className="font-medium">My Portfolio</span>
-              {expandedSection === 'portfolio' ? (
-                <ChevronDownIcon className="w-5 h-5" />
-              ) : (
-                <ChevronRightIcon className="w-5 h-5" />
-              )}
-            </button>
-            {expandedSection === 'portfolio' && (
-              <div className="px-4 py-2 border-t">
-                {uniqueInvestments.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No investments yet</p>
-                ) : (
-                  <ul className="space-y-1">
-                    {uniqueInvestments.map((investment) => (
-                      <li 
-                        key={investment.investmentId} 
-                        className={`text-sm hover:text-blue-600 cursor-pointer ${
-                          selectedStock === investment.stockCode ? 'text-blue-600 font-medium' : ''
-                        }`}
-                        onClick={() => handleStockClick(investment.stockCode)}
-                      >
-                        {investment.stockName} ({investment.stockCode})
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Watchlist Section */}
-          <div className="border rounded-lg">
-            <button
-              className="w-full px-4 py-2 flex items-center justify-between hover:bg-gray-50"
-              onClick={() => toggleSection('watchlist')}
-            >
-              <span className="font-medium">Watchlist</span>
-              {expandedSection === 'watchlist' ? (
-                <ChevronDownIcon className="w-5 h-5" />
-              ) : (
-                <ChevronRightIcon className="w-5 h-5" />
-              )}
-            </button>
-            {expandedSection === 'watchlist' && (
-              <div className="px-4 py-2 border-t">
-                {watchlist.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No stocks in watchlist</p>
-                ) : (
-                  <ul className="space-y-1">
-                    {watchlist.map((stock) => (
-                      <li 
-                        key={stock.symbol} 
-                        className={`text-sm hover:text-blue-600 cursor-pointer ${
-                          selectedStock === stock.symbol ? 'text-blue-600 font-medium' : ''
-                        }`}
-                        onClick={() => handleStockClick(stock.symbol)}
-                      >
-                        {stock.name} ({stock.symbol})
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* News Section */}
-      <div className="flex-1 bg-white shadow-lg rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-4">Related News & Analysis</h2>
+    <div className="flex justify-center items-start w-full min-h-screen bg-gray-50 py-8">
+      <div className="flex-1 max-w-3xl bg-white shadow-lg rounded-lg p-8 mx-auto">
+        {/* <h2 className="text-2xl font-bold mb-6 text-center">AI Stock Analysis Report</h2> */}
         {loading ? (
-          <p className="text-gray-500">Loading...</p>
-        ) : newsAnalysis ? (
-          <div className="space-y-6">
+          <p className="text-gray-500 text-center">Loading...</p>
+        ) : newsAnalysis && stockScore ? (
+          <div className="space-y-8">
             {/* Radar Chart */}
-            {stockScore ? (
-              <div className="bg-white p-4 rounded-lg border">
-                <h3 className="font-medium mb-4 text-center">Technical Indicator Score</h3>
-                <div className="w-full max-w-md mx-auto" style={{ height: '400px' }}>
-                  <Radar 
-                    data={createRadarChartData(stockScore)} 
-                    options={{
-                      ...radarChartOptions,
-                      maintainAspectRatio: false,
-                      responsive: true
-                    }} 
-                  />
-                </div>
-                <div className="mt-4 text-sm text-gray-600 text-center">
-                  <p>Score Description:</p>
-                  <ul className="list-disc list-inside">
-                    <li>Trend Strength: Based on SMA and EMA trend analysis</li>
-                    <li>Momentum Strength: Based on RSI momentum indicator</li>
-                    <li>MACD Strength: Based on MACD trend signals</li>
-                    <li>Price Strength: Current price position relative to moving averages</li>
-                    <li>Stability: Assessment of price volatility stability</li>
-                  </ul>
-                </div>
+            <div className="bg-white p-4 rounded-lg border">
+              <h3 className="font-medium mb-4 text-center"></h3>
+              <div className="w-full max-w-md mx-auto" style={{ height: '400px' }}>
+                <Radar 
+                  data={createRadarChartData(stockScore)} 
+                  options={{
+                    ...radarChartOptions,
+                    maintainAspectRatio: false,
+                    responsive: true
+                  }} 
+                />
               </div>
-            ) : (
-              <div className="text-gray-500 text-center">Calculating technical indicator scores...</div>
-            )}
-
-            {/* News Titles */}
-            <div>
-              <h3 className="font-medium mb-2">Latest News Headlines:</h3>
-              <ul className="space-y-2">
-                {newsAnalysis.titles.map((item, index) => (
-                  <li key={index} className="text-sm">
-                    <a 
-                      href={item.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      {item.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
             </div>
-            
-            {/* Analysis */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium mb-2 text-blue-800">News Analysis & Investment Advice:</h3>
-              <div className="text-sm text-blue-900 whitespace-pre-line">
+            {/* Advice Section */}
+            <div className="bg-blue-50 p-8 rounded-lg border-2 border-blue-300 shadow-lg">
+              <h3 className="font-bold mb-4 text-blue-900 text-xl">AI Investment Advice</h3>
+              <div className="text-base text-blue-900 whitespace-pre-line leading-relaxed" style={{ minHeight: 120 }}>
                 {newsAnalysis.advice}
               </div>
             </div>
           </div>
         ) : (
-          <p className="text-gray-500">No related news available</p>
+          <p className="text-gray-500 text-center">No analysis available</p>
         )}
       </div>
     </div>
