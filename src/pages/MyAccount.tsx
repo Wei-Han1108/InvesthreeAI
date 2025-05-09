@@ -151,50 +151,147 @@ const MyAccount = () => {
         <div className="py-4">
           <div className="flex items-center justify-between">
             <div className="text-gray-600">Password</div>
-            <button className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-medium text-sm" onClick={() => setShowPasswordFields(v => !v)}>
-              Set Password
+            <button 
+              className="px-4 py-1.5 bg-teal-50 hover:bg-teal-100 rounded text-teal-600 font-medium text-sm transition-colors duration-200 flex items-center gap-2" 
+              onClick={() => setShowPasswordFields(v => !v)}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                <path d="M1.323 11.447A2 2 0 0 0 1 12c0 1.691-.7 3.368 1.323 4.553a19.777 19.777 0 0 0 3.767 3.129c.73.385 1.493.74 2.286 1.054C9.561 21.29 10.78 21.5 12 21.5c1.22 0 2.44-.21 3.625-.764a19.798 19.798 0 0 0 2.286-1.054 19.777 19.777 0 0 0 3.767-3.129C23.3 15.368 23.5 13.691 23.5 12c0-1.691-.2-3.368-1.823-4.553a19.777 19.777 0 0 0-3.767-3.129 19.798 19.798 0 0 0-2.286-1.054C14.44 2.71 13.22 2.5 12 2.5c-1.22 0-2.44.21-3.625.764a19.798 19.798 0 0 0-2.286 1.054A19.777 19.777 0 0 0 2.323 7.447 13.298 13.298 0 0 0 1 12c0 .553.323 1.447 1.323 2.447Z"/>
+              </svg>
+              Change Password
             </button>
           </div>
           {showPasswordFields && (
-            <form className="mt-4 space-y-2" onSubmit={e => {
-              e.preventDefault()
-              setPasswordError('')
-              setPasswordSuccess('')
-              if (newPassword !== confirmPassword) {
-                setPasswordError('Passwords do not match')
-                return
-              }
-              if (newPassword.length < 6) {
-                setPasswordError('Password must be at least 6 characters')
-                return
-              }
-              // TODO: 调用后端API修改密码
-              setPasswordSuccess('Password updated successfully!')
-              setTimeout(() => {
-                setShowPasswordFields(false)
-                setNewPassword('')
-                setConfirmPassword('')
-              }, 1200)
-            }}>
-              <input
-                type="password"
-                className="border px-3 py-2 rounded text-gray-900 w-40"
-                placeholder="New Password"
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-              />
-              <input
-                type="password"
-                className="border px-3 py-2 rounded text-gray-900 w-40"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-              />
-              <button type="submit" className="px-4 py-2 bg-teal-500 hover:bg-teal-600 rounded text-white font-medium">Update</button>
-              {passwordError && <div className="text-red-500 mt-2">{passwordError}</div>}
-              {passwordSuccess && <div className="text-green-500 mt-2">{passwordSuccess}</div>}
+            <form 
+              className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200" 
+              onSubmit={e => {
+                e.preventDefault()
+                setPasswordError('')
+                setPasswordSuccess('')
+                
+                // Enhanced validation
+                if (newPassword.length < 8) {
+                  setPasswordError('Password must be at least 8 characters long')
+                  return
+                }
+                if (!/[A-Z]/.test(newPassword)) {
+                  setPasswordError('Password must contain at least one uppercase letter')
+                  return
+                }
+                if (!/[a-z]/.test(newPassword)) {
+                  setPasswordError('Password must contain at least one lowercase letter')
+                  return
+                }
+                if (!/[0-9]/.test(newPassword)) {
+                  setPasswordError('Password must contain at least one number')
+                  return
+                }
+                if (!/[!@#$%^&*]/.test(newPassword)) {
+                  setPasswordError('Password must contain at least one special character (!@#$%^&*)')
+                  return
+                }
+                if (newPassword !== confirmPassword) {
+                  setPasswordError('Passwords do not match')
+                  return
+                }
+                
+                // TODO: 调用后端API修改密码
+                setPasswordSuccess('Password updated successfully!')
+                setTimeout(() => {
+                  setShowPasswordFields(false)
+                  setNewPassword('')
+                  setConfirmPassword('')
+                }, 2000)
+              }}
+            >
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">New Password</label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                  />
+                  <div className="mt-1 text-xs text-gray-500">
+                    Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <input
+                  type="password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                />
+              </div>
+
+              {passwordError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                    <path d="M12 8v4"/>
+                    <path d="M12 16h.01"/>
+                  </svg>
+                  {passwordError}
+                </div>
+              )}
+              
+              {passwordSuccess && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-md text-green-600 text-sm flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <path d="m9 11 3 3L22 4"/>
+                  </svg>
+                  {passwordSuccess}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordFields(false)
+                    setNewPassword('')
+                    setConfirmPassword('')
+                    setPasswordError('')
+                    setPasswordSuccess('')
+                  }}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!newPassword || !confirmPassword}
+                >
+                  Update Password
+                </button>
+              </div>
             </form>
           )}
+        </div>
+        <div className="py-4 border-t border-gray-200">
+          <button
+            onClick={() => {
+              signOut()
+            }}
+            className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Logout
+          </button>
         </div>
       </div>
     </div>

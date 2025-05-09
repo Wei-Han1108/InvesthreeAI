@@ -13,17 +13,11 @@ function Navbar() {
             <Link to="/home" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
               Home
             </Link>
-            <Link to="/add" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
-              Add Investment
-            </Link>
             <Link to="/ranking" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
               Ranking
             </Link>
             <Link to="/ask-ai" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
-              Ask AI
-            </Link>
-            <Link to="/ai-report" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
-              AI Report
+              AI Chatbot
             </Link>
             <Link to="/news" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
               Breaking News

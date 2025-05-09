@@ -34,9 +34,9 @@ const mainFeatures = [
     tagColor: 'bg-green-50 text-green-600'
   },
   {
-    title: 'Earnings Trading',
-    desc: 'Leverage earnings data for winning trades',
-    icon: '💰',
+    title: 'Analysis Report',
+    desc: 'Get AI-powered insights and analysis for smarter investing decisions',
+    icon: '📊',
     to: '/ai-report',
     tag: 'AI Investment',
     tagColor: 'bg-blue-50 text-blue-600'

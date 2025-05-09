@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!survey) {
             navigate('/survey')
           } else {
-            navigate('/')
+            navigate('/home')
           }
         }
       }
