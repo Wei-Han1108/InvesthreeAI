@@ -9,12 +9,9 @@ function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <span className="text-xl font-bold text-gray-900 mr-8">InvesthreeAI</span>
+            <span className="text-xl font-bold text-gray-900 mr-8">InvesthereAI</span>
             <Link to="/home" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
               Home
-            </Link>
-            <Link to="/ranking" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
-              Ranking
             </Link>
             <Link to="/ask-ai" className="flex items-center px-2 py-2 text-gray-700 hover:text-gray-900">
               AI Chatbot
