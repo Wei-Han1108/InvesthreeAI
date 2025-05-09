@@ -21,6 +21,8 @@ import MarketPerformance from './pages/MarketPerformance'
 import InsiderTrading from './pages/InsiderTrading'
 import CompanyInfo from './pages/CompanyInfo'
 import TradingCenter from './pages/TradingCenter'
+import AIStockPickerPage from './pages/AIStockPickerPage'
+import NextWinningTradesPage from './pages/NextWinningTradesPage'
 
 function AppRoutes() {
   const { user } = useAuth()
@@ -129,6 +131,18 @@ function AppRoutes() {
             path="/trading-center"
             element={
               isAuthenticated ? <TradingCenter /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="/ai-stock-picker"
+            element={
+              isAuthenticated ? <AIStockPickerPage /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="/next-winning-trades"
+            element={
+              isAuthenticated ? <NextWinningTradesPage /> : <Navigate to="/login" />
             }
           />
         </Routes>

@@ -1,3 +1,14 @@
+import axios from 'axios';
+
+const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY;
+const FMP_BASE = "https://financialmodelingprep.com/api/v3";
+
+export interface StockSearchResult {
+  symbol: string;
+  name: string;
+  exchange: string;
+}
+
 export interface SearchResult {
   symbol: string
   name: string
@@ -14,41 +25,30 @@ interface HistoricalData {
   volume: number
 }
 
-const API_KEY = import.meta.env.VITE_FMP_API_KEY
-
 export const stockSearchService = {
-  async searchStocks(query: string): Promise<SearchResult[]> {
+  async searchStocks(query: string): Promise<StockSearchResult[]> {
+    if (!query || query.length < 1) return [];
+    
     try {
-      console.log('Searching stocks with query:', query)
-      console.log('Using API key:', API_KEY)
+      const response = await axios.get(
+        `${FMP_BASE}/search?query=${encodeURIComponent(query)}&limit=10&apikey=${FMP_API_KEY}`
+      );
       
-      const response = await fetch(
-        `https://financialmodelingprep.com/api/v3/search?query=${encodeURIComponent(query)}&limit=10&apikey=${API_KEY}`
-      )
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      console.log('Search results:', data)
-      
-      if (!Array.isArray(data)) {
-        console.error('Invalid response format:', data)
-        return []
-      }
-      
-      return data
+      return response.data.map((item: any) => ({
+        symbol: item.symbol,
+        name: item.name,
+        exchange: item.exchange
+      }));
     } catch (error) {
-      console.error('Failed to search stocks:', error)
-      return []
+      console.error('Error searching stocks:', error);
+      return [];
     }
   },
 
   async getHistoricalData(symbol: string): Promise<HistoricalData[]> {
     try {
       const response = await fetch(
-        `https://financialmodelingprep.com/api/v3/historical-chart/1hour/${symbol}?apikey=${API_KEY}`
+        `https://financialmodelingprep.com/api/v3/historical-chart/1hour/${symbol}?apikey=${FMP_API_KEY}`
       )
       const data = await response.json()
       return data.reverse() // 反转数据，让最新的数据在最后
@@ -61,7 +61,7 @@ export const stockSearchService = {
   async getStockProfile(symbol: string): Promise<any | null> {
     try {
       const response = await fetch(
-        `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=${API_KEY}`
+        `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=${FMP_API_KEY}`
       )
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)

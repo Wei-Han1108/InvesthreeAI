@@ -13,15 +13,15 @@ const mainFeatures = [
     title: 'AI Stock Picker',
     desc: 'AI-selected top daily stocks to day trade',
     icon: '📈',
-    to: '/ai-report',
+    to: '/ai-stock-picker',
     tag: 'AI Investment',
     tagColor: 'bg-blue-50 text-blue-600'
   },
   {
-    title: 'Swing Trades',
-    desc: 'Trade like a pro simply by following AI-guided signals',
+    title: 'Next Winning Trades',
+    desc: 'Follow AI-guided signals to catch the next big swing opportunity.',
     icon: '🔄',
-    to: '/ai-report',
+    to: '/next-winning-trades',
     tag: 'Stock & Crypto',
     tagColor: 'bg-green-50 text-green-600'
   },
