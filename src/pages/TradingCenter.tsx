@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import useInvestmentStore from '../store/investmentStore'
 import AddInvestmentModal from '../components/AddInvestmentModal'
+import SellInvestmentModal from '../components/SellInvestmentModal'
 
 const TABS = [
   { key: 'stock', label: 'Stock' },
@@ -49,9 +50,17 @@ const TradingCenter = () => {
   const [quotes, setQuotes] = useState<any[]>([])
   const investments = useInvestmentStore((state) => state.investments)
   const loadInvestments = useInvestmentStore((state) => state.loadInvestments)
+  const addInvestment = useInvestmentStore((state) => state.addInvestment)
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedStockForBuy, setSelectedStockForBuy] = useState<{ symbol: string, name: string } | null>(null)
   const sellInvestment = useInvestmentStore((state) => state.sellInvestment)
+  const [showSellModal, setShowSellModal] = useState(false)
+  const [selectedStockForSell, setSelectedStockForSell] = useState<{
+    investmentId: string
+    symbol: string
+    name: string
+    quantity: number
+  } | null>(null)
 
   useEffect(() => {
     const fetchInitialStocks = async () => {
@@ -229,7 +238,15 @@ const TradingCenter = () => {
     return () => { ignore = true }
   }, [results])
 
-  useEffect(() => { loadInvestments() }, [loadInvestments])
+  useEffect(() => {
+    loadInvestments()
+  }, [loadInvestments])
+
+  useEffect(() => {
+    if (results.length > 0) {
+      loadInvestments()
+    }
+  }, [results, loadInvestments])
 
   const renderStockFilter = () => (
     <div className="bg-violet-50 rounded-xl p-6 mb-8">
@@ -352,12 +369,29 @@ const TradingCenter = () => {
   )
 
   const renderStockResults = () => {
+    console.log('Current investments:', investments)
     const merged = results.map((item: any) => {
       const profile = profiles.find((p: any) => p.symbol === item.symbol) || {}
-      const holding = investments.find(inv => inv.stockCode === item.symbol)
+      // 计算该股票的所有投资记录
+      const stockInvestments = investments.filter(inv => inv.stockCode === item.symbol)
+      console.log(`Stock ${item.symbol} investments:`, stockInvestments)
+      // 计算总买入数量和总卖出数量
+      const totalBuy = stockInvestments.reduce((sum, inv) => sum + inv.quantity, 0)
+      const totalSell = stockInvestments.reduce((sum, inv) => sum + (inv.sellQuantity || 0), 0)
+      console.log(`Stock ${item.symbol} totalBuy:`, totalBuy, 'totalSell:', totalSell)
+      // 计算实际持仓数量
+      const actualQuantity = totalBuy - totalSell
+      // 如果有持仓，使用最新的投资记录ID
+      const holding = actualQuantity > 0 ? {
+        quantity: actualQuantity,
+        investmentId: stockInvestments[0]?.investmentId
+      } : null
+      console.log(`Stock ${item.symbol} holding:`, holding)
+
       return { ...item, ...profile, holding }
     })
     merged.sort((a, b) => (b.holding ? 1 : 0) - (a.holding ? 1 : 0))
+
     return (
       <div className="overflow-x-auto">
         {(loading || profileLoading) && <div className="text-violet-600 py-4">Loading...</div>}
@@ -371,12 +405,10 @@ const TradingCenter = () => {
                 <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-right">Holding</th>
                 <th className="px-4 py-2 text-right">Price</th>
-                <th className="px-4 py-2 text-right">Change (%)</th>
                 <th className="px-4 py-2 text-left">Industry</th>
                 <th className="px-4 py-2 text-right">Market Cap</th>
-                <th className="px-4 py-2 text-right">52W High</th>
-                <th className="px-4 py-2 text-right">52W Low</th>
                 <th className="px-4 py-2 text-right">Volume</th>
+                <th className="px-4 py-2 text-center w-32">Operation</th>
               </tr>
             </thead>
             <tbody>
@@ -411,26 +443,41 @@ const TradingCenter = () => {
                     </button>
                   </td>
                   <td className="px-4 py-2 text-right font-semibold">
-                    {stock.holding ? (
-                      <>
-                        {stock.holding.quantity}
-                        <button
-                          className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleSellInvestment(stock.holding.investmentId)
-                          }}
-                        >卖出</button>
-                      </>
-                    ) : ''}
+                    {stock.holding ? stock.holding.quantity : ''}
                   </td>
                   <td className="px-4 py-2 text-right">{typeof stock.price === 'number' ? `$${stock.price.toFixed(2)}` : '-'}</td>
-                  <td className={`px-4 py-2 text-right font-semibold ${stock.changesPercentage > 0 ? 'text-green-600' : stock.changesPercentage < 0 ? 'text-red-600' : ''}`}>{typeof stock.changesPercentage === 'number' ? `${stock.changesPercentage.toFixed(2)}%` : '-'}</td>
                   <td className="px-4 py-2">{stock.industry || '-'}</td>
                   <td className="px-4 py-2 text-right">{stock.marketCap ? `$${Number(stock.marketCap).toLocaleString()}` : (stock.mktCap ? `$${Number(stock.mktCap).toLocaleString()}` : '-')}</td>
-                  <td className="px-4 py-2 text-right">{stock['52WeekHigh'] || stock['yearHigh'] || '-'}</td>
-                  <td className="px-4 py-2 text-right">{stock['52WeekLow'] || stock['yearLow'] || '-'}</td>
                   <td className="px-4 py-2 text-right">{stock.volAvg ? Number(stock.volAvg).toLocaleString() : (stock.volume ? Number(stock.volume).toLocaleString() : '-')}</td>
+                  <td className="px-4 py-2 text-center w-32">
+                    <div className="flex justify-center space-x-2">
+                      <button
+                        className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                        onClick={() => {
+                          setSelectedStockForBuy({ symbol: stock.symbol, name: stock.companyName || stock.name })
+                          setShowAddModal(true)
+                        }}
+                      >
+                        Buy
+                      </button>
+                      {stock.holding && (
+                        <button
+                          className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSellInvestment(
+                              stock.holding.investmentId,
+                              stock.symbol,
+                              stock.companyName || stock.name,
+                              stock.holding.quantity
+                            )
+                          }}
+                        >
+                          Sell
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -443,26 +490,49 @@ const TradingCenter = () => {
     )
   }
 
-  const handleAddInvestment = async (investment: any) => {
-    setShowAddModal(false)
-    setSelectedStockForBuy(null)
-    await loadInvestments()
+  const handleAddInvestment = async (investment: {
+    symbol: string
+    name: string
+    shares: number
+    purchasePrice: number
+    purchaseDate: string
+    currentPrice: number
+  }) => {
+    try {
+      await addInvestment({
+        stockName: investment.name,
+        stockCode: investment.symbol,
+        purchasePrice: investment.purchasePrice,
+        quantity: investment.shares,
+        purchaseDate: investment.purchaseDate,
+        currentPrice: investment.currentPrice,
+      })
+      setShowAddModal(false)
+      setSelectedStockForBuy(null)
+      await loadInvestments()
+    } catch (error) {
+      console.error('Failed to add investment:', error)
+    }
   }
 
-  const handleSellInvestment = async (investmentId: string) => {
-    const sellQuantity = prompt('请输入卖出数量:')
-    if (!sellQuantity) return
-    const sellPrice = prompt('请输入卖出价格:')
-    if (!sellPrice) return
-    const sellDate = prompt('请输入卖出日期 (YYYY-MM-DD):')
-    if (!sellDate) return
-    try {
-      await sellInvestment(investmentId, Number(sellQuantity), Number(sellPrice), sellDate)
-      await loadInvestments()
-      console.log('卖出成功', investmentId)
-    } catch (e) {
-      console.error('卖出失败', e)
+  const handleSellInvestment = (investmentId: string, symbol: string, name: string, quantity: number) => {
+    // 计算实际可卖出的数量
+    const stockInvestments = investments.filter(inv => inv.stockCode === symbol)
+    const totalBuy = stockInvestments.reduce((sum, inv) => sum + inv.quantity, 0)
+    const totalSell = stockInvestments.reduce((sum, inv) => sum + (inv.sellQuantity || 0), 0)
+    const actualQuantity = totalBuy - totalSell
+
+    if (actualQuantity <= 0) {
+      console.error('No shares available to sell')
+      return
     }
+
+    setSelectedStockForSell({ investmentId, symbol, name, quantity: actualQuantity })
+    setShowSellModal(true)
+  }
+
+  const handleSellComplete = async () => {
+    await loadInvestments()
   }
 
   return (
@@ -493,6 +563,22 @@ const TradingCenter = () => {
             onClose={() => { setShowAddModal(false); setSelectedStockForBuy(null) }}
             onAdd={handleAddInvestment}
             {...(selectedStockForBuy ? { defaultSymbol: selectedStockForBuy.symbol, defaultName: selectedStockForBuy.name } : {})}
+          />
+          <SellInvestmentModal
+            isOpen={showSellModal}
+            onClose={() => { setShowSellModal(false); setSelectedStockForSell(null) }}
+            onSell={handleSellComplete}
+            {...(selectedStockForSell ? {
+              investmentId: selectedStockForSell.investmentId,
+              stockCode: selectedStockForSell.symbol,
+              stockName: selectedStockForSell.name,
+              currentQuantity: selectedStockForSell.quantity
+            } : {
+              investmentId: '',
+              stockCode: '',
+              stockName: '',
+              currentQuantity: 0
+            })}
           />
         </div>
       )}

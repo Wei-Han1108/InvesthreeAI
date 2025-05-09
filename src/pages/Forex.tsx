@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { FMP_API_KEY } from '../config'
+import useInvestmentStore from '../store/investmentStore'
+import AddInvestmentModal from '../components/AddInvestmentModal'
+import SellInvestmentModal from '../components/SellInvestmentModal'
 
 interface ForexData {
   symbol: string
@@ -15,14 +18,22 @@ interface ForexData {
 }
 
 const Forex = () => {
+  const { investments, loadInvestments } = useInvestmentStore()
   const [forexData, setForexData] = useState<ForexData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showSellModal, setShowSellModal] = useState(false)
+  const [selectedForex, setSelectedForex] = useState<ForexData | null>(null)
   const suggestRef = useRef<HTMLDivElement>(null)
   const suggestTimeout = useRef<any>(null)
+
+  useEffect(() => {
+    loadInvestments()
+  }, [loadInvestments])
 
   useEffect(() => {
     const fetchForexData = async () => {
@@ -75,6 +86,16 @@ const Forex = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleBuyForex = (forex: ForexData) => {
+    setSelectedForex(forex)
+    setShowAddModal(true)
+  }
+
+  const handleSellForex = (forex: ForexData) => {
+    setSelectedForex(forex)
+    setShowSellModal(true)
   }
 
   useEffect(() => {
@@ -155,29 +176,102 @@ const Forex = () => {
                 <th className="px-4 py-2 text-right">High</th>
                 <th className="px-4 py-2 text-right">Low</th>
                 <th className="px-4 py-2 text-right">Volume</th>
+                <th className="px-4 py-2 text-right">Holdings</th>
+                <th className="px-4 py-2 text-right w-32">Operation</th>
               </tr>
             </thead>
             <tbody>
-              {forexData.map((forex) => (
-                <tr key={forex.symbol} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2 font-bold">{forex.symbol}</td>
-                  <td className="px-4 py-2 text-right">{forex.price.toFixed(4)}</td>
-                  <td className={`px-4 py-2 text-right font-semibold ${
-                    forex.changesPercentage > 0 ? 'text-green-600' : forex.changesPercentage < 0 ? 'text-red-600' : ''
-                  }`}>
-                    {forex.changesPercentage.toFixed(2)}%
-                  </td>
-                  <td className="px-4 py-2 text-right">{forex.bid.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.ask.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.open.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.high.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.low.toFixed(4)}</td>
-                  <td className="px-4 py-2 text-right">{forex.volume.toLocaleString()}</td>
-                </tr>
-              ))}
+              {forexData.map((forex) => {
+                const forexInvestments = investments.filter(
+                  (inv) => inv.stockCode === forex.symbol
+                )
+                const totalBuy = forexInvestments.reduce((sum, inv) => sum + inv.quantity, 0)
+                const totalSell = forexInvestments.reduce((sum, inv) => sum + (inv.sellQuantity || 0), 0)
+                const actualQuantity = totalBuy - totalSell
+                const holdingInfo = actualQuantity > 0 ? {
+                  quantity: actualQuantity,
+                  investmentId: forexInvestments[0].investmentId
+                } : null
+
+                return (
+                  <tr key={forex.symbol} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-2 font-bold">{forex.symbol}</td>
+                    <td className="px-4 py-2 text-right">{forex.price.toFixed(4)}</td>
+                    <td className={`px-4 py-2 text-right font-semibold ${
+                      forex.changesPercentage > 0 ? 'text-green-600' : forex.changesPercentage < 0 ? 'text-red-600' : ''
+                    }`}>
+                      {forex.changesPercentage.toFixed(2)}%
+                    </td>
+                    <td className="px-4 py-2 text-right">{forex.bid.toFixed(4)}</td>
+                    <td className="px-4 py-2 text-right">{forex.ask.toFixed(4)}</td>
+                    <td className="px-4 py-2 text-right">{forex.open.toFixed(4)}</td>
+                    <td className="px-4 py-2 text-right">{forex.high.toFixed(4)}</td>
+                    <td className="px-4 py-2 text-right">{forex.low.toFixed(4)}</td>
+                    <td className="px-4 py-2 text-right">{forex.volume.toLocaleString()}</td>
+                    <td className="px-4 py-2 text-right">
+                      {holdingInfo ? (
+                        <div>
+                          <div>Quantity: {holdingInfo.quantity}</div>
+                          <div>Value: ${(holdingInfo.quantity * forex.price).toFixed(2)}</div>
+                        </div>
+                      ) : (
+                        'No holdings'
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <div className="flex space-x-2 justify-end">
+                        <button
+                          onClick={() => handleBuyForex(forex)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          Buy
+                        </button>
+                        {holdingInfo && (
+                          <button
+                            onClick={() => handleSellForex(forex)}
+                            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                          >
+                            Sell
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
+      )}
+
+      {showAddModal && selectedForex && (
+        <AddInvestmentModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onAdd={() => {
+            setShowAddModal(false)
+            loadInvestments()
+          }}
+          defaultSymbol={selectedForex.symbol}
+          defaultName={selectedForex.name}
+        />
+      )}
+
+      {showSellModal && selectedForex && (
+        <SellInvestmentModal
+          isOpen={showSellModal}
+          onClose={() => setShowSellModal(false)}
+          onSell={() => {
+            setShowSellModal(false)
+            loadInvestments()
+          }}
+          investmentId={investments.find(inv => inv.stockCode === selectedForex.symbol)?.investmentId || ''}
+          stockCode={selectedForex.symbol}
+          stockName={selectedForex.name}
+          currentQuantity={investments
+            .filter(inv => inv.stockCode === selectedForex.symbol)
+            .reduce((sum, inv) => sum + inv.quantity - (inv.sellQuantity || 0), 0)}
+        />
       )}
     </div>
   )

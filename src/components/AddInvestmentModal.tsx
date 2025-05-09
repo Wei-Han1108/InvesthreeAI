@@ -156,23 +156,23 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">{mode === 'buy' ? '添加投资' : '卖出股票'}</h2>
+        <h2 className="text-xl font-semibold mb-4">Add Investment</h2>
         <form onSubmit={handleSubmit}>
           {defaultSymbol && defaultName ? (
             <>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">股票名称</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Name</label>
                 <input type="text" value={defaultName} readOnly className="w-full px-3 py-2 border rounded-md bg-gray-50" />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">股票代码</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Symbol</label>
                 <input type="text" value={defaultSymbol} readOnly className="w-full px-3 py-2 border rounded-md bg-gray-50" />
               </div>
             </>
           ) : (
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">股票名称</label>
-              <div ref={searchRef} className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Stock Name</label>
+              <div ref={searchRef}>
                 <input
                   type="text"
                   value={searchQuery}
@@ -181,7 +181,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
                     if (searchQuery.length >= 2) setShowResults(true)
                   }}
                   className="w-full px-3 py-2 border rounded-md"
-                  placeholder="搜索股票..."
+                  placeholder="Search stocks..."
                 />
                 {showResults && searchResults.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-auto">
@@ -199,7 +199,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
                 )}
                 {showResults && searchQuery.length >= 2 && searchResults.length === 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 p-2 text-gray-500">
-                    未找到匹配的股票
+                    No matching stocks found
                   </div>
                 )}
               </div>
@@ -209,9 +209,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
           {selectedStock && (
             <>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  股票代码
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Symbol</label>
                 <input
                   type="text"
                   value={selectedStock.symbol}
@@ -221,9 +219,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {mode === 'buy' ? '购买价格' : '卖出价格'}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Price</label>
                 <input
                   type="number"
                   value={purchasePrice}
@@ -235,9 +231,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  数量
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
                 <input
                   type="number"
                   value={shares}
@@ -249,15 +243,13 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
                 />
                 {mode === 'sell' && maxQuantity && (
                   <p className="mt-1 text-sm text-gray-500">
-                    最大可卖出数量: {maxQuantity}
+                    Maximum sellable quantity: {maxQuantity}
                   </p>
                 )}
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {mode === 'buy' ? '购买日期' : '卖出日期'}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label>
                 <input
                   type="date"
                   value={purchaseDate}
@@ -268,9 +260,7 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  当前价格
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Price</label>
                 <input
                   type="number"
                   value={currentPrice}
@@ -287,14 +277,14 @@ const AddInvestmentModal = ({ isOpen, onClose, onAdd, defaultSymbol, defaultName
               onClick={onClose}
               className="px-4 py-2 text-gray-700 border rounded-md hover:bg-gray-50"
             >
-              取消
+              Cancel
             </button>
             <button
               type="submit"
               disabled={!selectedStock || !shares}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {mode === 'buy' ? '添加' : '卖出'}
+              Add
             </button>
           </div>
         </form>

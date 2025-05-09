@@ -120,6 +120,8 @@ export const investmentService = {
 
   async sellInvestment(userId: string, investmentId: string, sellQuantity: number, sellPrice: number, sellDate: string) {
     const docClient = getClient()
+    
+    // 先获取当前投资记录
     const params = {
       TableName: 'Investments',
       Key: {
@@ -130,23 +132,61 @@ export const investmentService = {
     const result = await docClient.send(new GetCommand(params))
     const investment = result.Item
     if (!investment) throw new Error('Investment not found')
-    if (sellQuantity > investment.quantity) throw new Error('Sell quantity exceeds holding quantity')
-    const profitLoss = (sellPrice - investment.purchasePrice) * sellQuantity
-    const updateParams = {
+    
+    // 获取同一股票代码的所有投资记录
+    const stockParams = {
       TableName: 'Investments',
-      Key: {
-        userId,
-        investmentId,
-      },
-      UpdateExpression: 'SET sellQuantity = :sq, sellPrice = :sp, sellDate = :sd, profitLoss = :pl, quantity = quantity - :sq',
+      FilterExpression: 'userId = :userId AND stockCode = :stockCode',
       ExpressionAttributeValues: {
-        ':sq': sellQuantity,
-        ':sp': sellPrice,
-        ':sd': sellDate,
-        ':pl': profitLoss,
+        ':userId': userId,
+        ':stockCode': investment.stockCode,
       },
     }
-    await docClient.send(new UpdateCommand(updateParams))
+    const stockResult = await docClient.send(new ScanCommand(stockParams))
+    const stockInvestments = stockResult.Items || []
+    
+    // 计算总买入和总卖出数量
+    const totalBuy = stockInvestments.reduce((sum, inv) => sum + (inv.quantity > 0 ? inv.quantity : 0), 0)
+    const totalSell = stockInvestments.reduce((sum, inv) => sum + (inv.quantity < 0 ? Math.abs(inv.quantity) : 0), 0)
+    const availableQuantity = totalBuy - totalSell
+    
+    console.log('Stock quantity check:', {
+      stockCode: investment.stockCode,
+      totalBuy,
+      totalSell,
+      availableQuantity,
+      requestedSellQuantity: sellQuantity
+    })
+    
+    if (availableQuantity <= 0) {
+      throw new Error('No shares available to sell')
+    }
+    
+    if (sellQuantity > availableQuantity) {
+      throw new Error(`Sell quantity exceeds holding quantity. Available: ${availableQuantity}`)
+    }
+    
+    const profitLoss = (sellPrice - investment.purchasePrice) * sellQuantity
+    
+    // 创建新的卖出记录
+    const sellParams = {
+      TableName: 'Investments',
+      Item: {
+        userId,
+        investmentId: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        email: investment.email,
+        stockCode: investment.stockCode,
+        stockName: investment.stockName,
+        quantity: -sellQuantity, // 使用负数表示卖出
+        purchasePrice: sellPrice, // 使用卖出价格
+        purchaseDate: sellDate,   // 使用卖出日期
+        currentPrice: investment.currentPrice,
+        profitLoss,
+        createdAt: new Date().toISOString(),
+      },
+    }
+    
+    await docClient.send(new PutCommand(sellParams))
     return true
   },
 } 
