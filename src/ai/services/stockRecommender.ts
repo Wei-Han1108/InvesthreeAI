@@ -52,7 +52,8 @@ ${fmpData.sectorPerformance ? `\nSector Performance:\n${fmpData.sectorPerformanc
 ${fmpData.topGainers ? `\nTop Gainers:\n${fmpData.topGainers.map(s => `- ${s.name} (${s.symbol}): ${s.changePercent > 0 ? '+' : ''}${s.changePercent}%`).join('\n')}` : ''}
 ${fmpData.topLosers ? `\nTop Losers:\n${fmpData.topLosers.map(s => `- ${s.name} (${s.symbol}): ${s.changePercent > 0 ? '+' : ''}${s.changePercent}%`).join('\n')}` : ''}
 
-Based on the user's profile, current holdings, and the above market data, recommend 10 stocks for the user to consider next. Only return a JSON array of stock symbols, e.g. ["AAPL", "MSFT", ...]. Do not include any explanation or extra text.`;
+Based on the user's profile, current holdings, and the above market data, recommend 10 stocks for the user to consider next. Only return a JSON array of stock symbols,
+e.g. ["AAPL", "MSFT", ...]. Do not include any explanation or extra text.`;
 }
 
 export async function recommendStocks({

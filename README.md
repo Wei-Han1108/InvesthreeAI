@@ -1,107 +1,114 @@
-# InvesthreeAI - 智能投资助手
+# InvesthreeAI
 
-一个基于人工智能的投资分析平台，帮助投资者做出更明智的投资决策。
+A modern AI-powered investment assistant web application, built with React, TypeScript, AWS, and TailwindCSS.
 
-## 主要功能
+---
 
-- 🤖 AI 智能分析：基于 GPT 模型的投资分析和建议
-- 📊 投资组合管理：实时跟踪和管理您的投资组合
-- 👀 观察列表：关注感兴趣的股票
-- 📈 市场分析：获取市场趋势和投资机会
-- 💡 个性化建议：根据您的投资组合提供定制化建议
+## Features
 
-## 技术栈
+### Onboarding & Personalization
+- **First-Time User Survey**: New users complete a personalized survey to tailor investment advice and recommendations.
+- **Dynamic User Experience**: The app adapts content and suggestions based on user profile and survey results.
 
-- React + TypeScript
-- Tailwind CSS
-- OpenAI GPT API
-- Zustand 状态管理
-- Vite 构建工具
+### AI-Powered Investment Tools
+- **AI Investment Advice**: Receive AI-generated investment analysis, news summaries, and actionable insights.
+- **AI Chatbot**: Ask investment-related questions and get instant, context-aware AI responses.
+- **Price Prediction**: Get AI-driven predictions for individual stocks, ETFs, and cryptocurrencies, including short-term and long-term outlooks.
+- **AI Stock Picker**: Discover stock ideas and recommendations powered by advanced AI models.
 
+### Portfolio & Watchlist
+- **Portfolio Management**: Add, edit, and track your investments, including stocks, ETFs, and cryptocurrencies.
+- **Watchlist**: Monitor favorite assets, with real-time price updates and performance tracking.
+- **Performance Analytics**: Visualize portfolio growth, profit/loss, and compare with market benchmarks.
 
-## 开始使用
+### Market Data & Research
+- **Real-Time Market Data**: Access up-to-date information on stocks, ETFs, crypto, commodities, and forex.
+- **Company & Market Insights**: Deep-dive into company profiles, insider trading, ETF holdings, and market performance.
+- **News & Sentiment**: Stay informed with breaking news and AI-powered sentiment analysis.
 
-1. 克隆项目
-```bash
-git clone https://github.com/yourusername/InvesthreeAI.git
-```
-
-2. 安装依赖
-```bash
-cd InvesthreeAI
-npm install
-```
-
-3. 配置环境变量
-```bash
-cp .env.example .env
-```
-编辑 `.env` 文件，添加必要的 API 密钥
-
-## 环境变量（.env）
+### Social & Gamification
+- **User Rankings**: See top-performing users and compare your investment performance.
+- **Community Features**: (Planned) Share insights, strategies, and compete on leaderboards.
 
 
-```env
-# 金融数据 API Key（Financial Modeling Prep）
-VITE_FMP_API_KEY=<YOUR_FMP_API_KEY>
+---
 
-# DynamoDB 表名
-VITE_DYNAMODB_TABLE_NAME=Investments
-VITE_DYNAMODB_WATCHLIST_TABLE_NAME=Watchlist
-
-# AWS 区域及凭证
-VITE_AWS_REGION=us-east-2
-VITE_AWS_ACCESS_KEY_ID=<YOUR_AWS_ACCESS_KEY_ID>
-VITE_AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
-
-# Cognito 配置
-VITE_COGNITO_USER_POOL_ID=<YOUR_COGNITO_USER_POOL_ID>
-VITE_COGNITO_WEB_CLIENT_ID=<YOUR_COGNITO_WEB_CLIENT_ID>
-VITE_COGNITO_IDENTITY_POOL_ID=<YOUR_COGNITO_IDENTITY_POOL_ID>
-
-# OpenAI API Key
-VITE_OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
-
-
-4. 启动开发服务器
-```bash
-npm run dev
-```
-
-## 项目结构
+## Project Structure
 
 ```
 src/
-├── ai/              # AI 相关组件和服务
-├── components/      # 通用组件
-├── pages/          # 页面组件
-├── store/          # 状态管理
-├── types/          # TypeScript 类型定义
-└── utils/          # 工具函数
+  ai/                    # AI logic, chat, and report components
+    components/          # AI-related UI components
+    services/            # AI service logic (OpenAI, LangChain, etc.)
+  components/            # Reusable UI components (Navbar, Modals, Search, etc.)
+  contexts/              # React Contexts (Auth, global state, etc.)
+  pages/                 # Main application pages (Home, Survey, Login, Dashboard, etc.)
+  services/              # API and AWS service logic (auth, user, survey, market data)
+  store/                 # Zustand state management (portfolio, watchlist, etc.)
+  config/                # Configuration files (AWS, API keys, etc.)
+  stock/                 # Stock-specific logic and utilities
+  App.tsx                # Main app component and route definitions
+  main.tsx               # Application entry point
+  index.css              # Global styles (TailwindCSS)
 ```
-![image](https://github.com/user-attachments/assets/24bf9e5f-bd1c-459e-8251-8517b7b5688f)
-![image](https://github.com/user-attachments/assets/90834917-e783-4f32-8d83-9c7446d5fdb7)
-![image](https://github.com/user-attachments/assets/0cf36cf6-8d7b-4760-8f0d-43c1786e8df8)
-![image](https://github.com/user-attachments/assets/1ae16cf3-8019-4dfb-807e-937385ade6f6)
-![image](https://github.com/user-attachments/assets/a3063f3e-ef39-4628-aa5b-2b168acc93ca)
 
-## 问题
-1. FMP 限流，本地保存数据1h更新一次 ***
-2. 添加股票时如果限流，需要错误处理 ***
-3. 新闻默认APPL
-4. Ask AI 搜索栏位置太靠下
-5. 深色主题
-6. 雷达图各个股票分布区别不大，最好有总评分
+### Notable Files & Folders
+
+- `src/pages/Home.tsx` — Main dashboard after login
+- `src/pages/Survey.tsx` — User onboarding survey
+- `src/pages/Login.tsx` & `src/pages/ConfirmSignup.tsx` — Authentication pages
+- `src/pages/Portfolio.tsx`, `src/pages/AddInvestment.tsx` — Portfolio management
+- `src/pages/Ranking.tsx` — User rankings
+- `src/pages/AskAI.tsx`, `src/pages/AIReportPage.tsx` — AI chatbot and report
+- `src/components/Navbar.tsx` — Top navigation bar
+- `src/services/` — All backend and AWS service logic
+
+---
+
+## Tech Stack
+
+- **Frontend**: React 18, TypeScript, Zustand, React Router, TailwindCSS, Chart.js, Recharts, MUI
+- **Backend/Cloud**: AWS Cognito, DynamoDB (via AWS SDK)
+- **AI**: OpenAI, LangChain, Google GenAI
+- **Build Tools**: Vite, ESLint, PostCSS
+
+---
+
+## Getting Started
+
+1. **Clone the repo**
+    ```bash
+    git clone https://github.com/yourusername/InvesthreeAI.git
+    cd InvesthreeAI
+    ```
+
+2. **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3. **Configure environment**
+    ```bash
+    cp example.env .env
+    ```
+
+4. **Run the app**
+    ```bash
+    npm run dev
+    ```
+    App will be available at [http://localhost:5173](http://localhost:5173)
 
 
-## 贡献指南
+---
 
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+## Customization
 
-## 许可证
+- Modify `src/components/Navbar.tsx` to change navigation.
+- Update survey questions in `src/pages/Survey.tsx`.
+- Add new features or pages in `src/pages/`.
 
-[MIT License](LICENSE) 
+---
+
+## License
+
+MIT 

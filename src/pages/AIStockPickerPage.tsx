@@ -91,10 +91,6 @@ const AIStockPickerPage = () => {
 
   // Search stock handler
   const handleSearch = async () => {
-    if (searchInput.trim()) {
-      navigate('/ask-ai', { state: { question: searchInput.trim() } });
-      return;
-    }
     setSearchLoading(true);
     setSearchError("");
     setSearchedStock(null);
@@ -214,7 +210,7 @@ const AIStockPickerPage = () => {
               onClick={e => {
                 e.stopPropagation();
                 if (searchInput.trim()) {
-                  navigate('/ask-ai', { state: { question: searchInput.trim() } });
+                  handleSearch();
                 }
               }}
               style={{ cursor: searchInput.trim() ? 'pointer' : 'not-allowed' }}

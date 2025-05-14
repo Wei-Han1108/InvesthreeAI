@@ -5,6 +5,7 @@ import useWatchlistStore from '../../store/watchlistStore'
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '../../contexts/AuthContext'
 import { userSurveyService } from '../../services/userSurveyService'
+import { useLocation } from 'react-router-dom'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -13,6 +14,7 @@ interface Message {
 }
 
 const AskAI = () => {
+  const location = useLocation();
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -57,6 +59,12 @@ const AskAI = () => {
       userSurveyService.getUserSurvey(user.email).then(setSurvey)
     }
   }, [user])
+
+  useEffect(() => {
+    if (location.state && location.state.question) {
+      setQuestion(location.state.question);
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

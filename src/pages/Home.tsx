@@ -1,12 +1,42 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const quickTags = [
-  { label: 'Quick Insights', color: 'bg-blue-100 text-blue-700', to: '/ask-ai' },
-  { label: 'Technical Expert', color: 'bg-purple-100 text-purple-700', to: '/ai-report' },
-  { label: 'Crypto Analyst', color: 'bg-green-100 text-green-700', to: '/news' },
-  { label: 'Fundamental Guru', color: 'bg-yellow-100 text-yellow-700', to: '/news' },
-  { label: 'Sentiment Analyzer', color: 'bg-cyan-100 text-cyan-700', to: '/news' },
+  { label: 'Quick Insights', color: 'bg-blue-100 text-blue-700', key: 'quick' },
+  { label: 'Technical Expert', color: 'bg-purple-100 text-purple-700', key: 'tech' },
+  { label: 'Crypto Analyst', color: 'bg-green-100 text-green-700', key: 'crypto' },
+  { label: 'Fundamental Guru', color: 'bg-yellow-100 text-yellow-700', key: 'fundamental' },
+  { label: 'Sentiment Analyzer', color: 'bg-cyan-100 text-cyan-700', key: 'sentiment' },
 ]
+
+const tagQuestions: Record<string, string[]> = {
+  quick: [
+    "What's the latest news sentiment around Nvidia from the past week?",
+    "What are the top 3 trending stocks today?",
+    "Summarize the market's reaction to Apple's earnings report."
+  ],
+  tech: [
+    "Explain the technical analysis for Tesla's recent price movement.",
+    "What are the key resistance and support levels for S&P 500?",
+    "Is there a golden cross forming on Microsoft?"
+  ],
+  crypto: [
+    "What is the latest news in the crypto market?",
+    "Which altcoins are showing bullish signals this week?",
+    "Summarize Bitcoin's price action in the last 24 hours."
+  ],
+  fundamental: [
+    "What is the intrinsic value of Amazon based on DCF?",
+    "How did the latest CPI data affect the market?",
+    "Which companies have the strongest balance sheets in tech?"
+  ],
+  sentiment: [
+    "What is the current market sentiment for Nvidia?",
+    "Is the sentiment around the FED's rate decision positive or negative?",
+    "Which sectors are experiencing the most negative news sentiment?"
+  ]
+}
 
 const mainFeatures = [
   {
@@ -103,6 +133,10 @@ const exploreFeatures = [
 ]
 
 const Home = () => {
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [searchInput, setSearchInput] = useState('')
+  const navigate = useNavigate()
+
   return (
     <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-5xl mx-auto">
@@ -114,18 +148,52 @@ const Home = () => {
             <input
               className="flex-1 px-4 py-3 rounded-l-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 text-lg"
               placeholder="Search symbols or ask a question"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && searchInput.trim()) {
+                  navigate('/ask-ai', { state: { question: searchInput } })
+                }
+              }}
             />
-            <button className="px-5 py-3 bg-blue-600 text-white rounded-r-lg font-bold text-lg hover:bg-blue-700">🔍</button>
+            <button
+              className="px-5 py-3 bg-blue-600 text-white rounded-r-lg font-bold text-lg hover:bg-blue-700"
+              onClick={() => {
+                if (searchInput.trim()) {
+                  navigate('/ask-ai', { state: { question: searchInput } })
+                }
+              }}
+            >🔍</button>
           </div>
           <div className="flex flex-wrap gap-2 justify-center mb-2">
             {quickTags.map(tag => (
-              <Link key={tag.label} to={tag.to} className={`px-3 py-1 rounded-full text-sm font-medium ${tag.color}`}>{tag.label}</Link>
+              <button
+                key={tag.label}
+                type="button"
+                className={`px-3 py-1 rounded-full text-sm font-medium focus:outline-none ${tag.color} ${selectedTag === tag.key ? 'ring-2 ring-blue-400' : ''}`}
+                onClick={() => setSelectedTag(tag.key)}
+              >
+                {tag.label}
+              </button>
             ))}
           </div>
           <div className="w-full max-w-xl flex flex-col gap-2 mt-4">
-            <button className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-left text-gray-700 hover:bg-blue-50">What's the latest news sentiment around Nvidia from the past week?</button>
-            <button className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-left text-gray-700 hover:bg-blue-50">What is the latest news regarding FED's interest rate cut decisions?</button>
-            <button className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-left text-gray-700 hover:bg-blue-50">Which companies are being affected by the Trump's new tariffs?</button>
+            {selectedTag && tagQuestions[selectedTag]?.map((q, idx) => (
+              <button
+                key={idx}
+                className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-left text-gray-700 hover:bg-blue-50"
+                onClick={() => navigate('/ask-ai', { state: { question: q } })}
+              >
+                {q}
+              </button>
+            ))}
+            {!selectedTag && (
+              <>
+                <button className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-left text-gray-700 hover:bg-blue-50" onClick={() => navigate('/ask-ai', { state: { question: "What's the latest news sentiment around Nvidia from the past week?" } })}>What's the latest news sentiment around Nvidia from the past week?</button>
+                <button className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-left text-gray-700 hover:bg-blue-50" onClick={() => navigate('/ask-ai', { state: { question: "What is the latest news regarding FED's interest rate cut decisions?" } })}>What is the latest news regarding FED's interest rate cut decisions?</button>
+                <button className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-left text-gray-700 hover:bg-blue-50" onClick={() => navigate('/ask-ai', { state: { question: "Which companies are being affected by the Trump's new tariffs?" } })}>Which companies are being affected by the Trump's new tariffs?</button>
+              </>
+            )}
           </div>
         </div>
         {/* Trading Strategies 区块 */}

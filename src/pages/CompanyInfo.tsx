@@ -156,10 +156,10 @@ const CompanyInfo = () => {
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 <div>CEO: {profile.ceo}</div>
                 <div>IPO: {profile.ipoDate}</div>
-                <div>市值: {profile.mktCap?.toLocaleString()}</div>
-                <div>员工数: {profile.fullTimeEmployees}</div>
-                <div>国家: {profile.country}</div>
-                <div>网站: <a href={profile.website} className="text-blue-600 underline" target="_blank" rel="noreferrer">{profile.website}</a></div>
+                <div>Market Cap: {profile.mktCap?.toLocaleString()}</div>
+                <div>Employees: {profile.fullTimeEmployees}</div>
+                <div>Country: {profile.country}</div>
+                <div>Website: <a href={profile.website} className="text-blue-600 underline" target="_blank" rel="noreferrer">{profile.website}</a></div>
               </div>
             </div>
           )}
