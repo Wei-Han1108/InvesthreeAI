@@ -2,6 +2,8 @@
 
 A modern AI-powered investment assistant web application, built with React, TypeScript, AWS, and TailwindCSS.
 
+
+
 ---
 
 # Example Output:
@@ -150,4 +152,16 @@ VITE_COGNITO_IDENTITY_POOL_ID=<YOUR_COGNITO_IDENTITY_POOL_ID>
 
 # OpenAI API Key
 VITE_OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
-``` 
+```
+
+## View Parts of Page
+![image](https://github.com/user-attachments/assets/6eab60bf-a859-4cdf-8e41-e984d05cad53)
+![image](https://github.com/user-attachments/assets/c031eb88-fcc5-42b0-9d18-7fd0292ea431)
+![image](https://github.com/user-attachments/assets/57e87fb3-b5bf-40c8-9e4f-513be2900269)
+![image](https://github.com/user-attachments/assets/f68433f7-377e-46d3-9128-30ce69268484)
+![image](https://github.com/user-attachments/assets/5be76a97-eb43-4632-9644-a77509a41d36)
+![image](https://github.com/user-attachments/assets/79175595-1bd2-4139-be28-ad8de22766d9)
+![image](https://github.com/user-attachments/assets/9225bec2-ce72-423f-b881-8cebdd5b4bd1)
+![image](https://github.com/user-attachments/assets/ea1efbc0-0805-4912-bf0c-90ea720daca3)
+![image](https://github.com/user-attachments/assets/c315468f-19cc-46a9-ab2c-7fa7658aacd6)
+![image](https://github.com/user-attachments/assets/76ef6c07-b05e-4478-a7e4-5a99e279a58a)
