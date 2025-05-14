@@ -4,6 +4,7 @@ A modern AI-powered investment assistant web application, built with React, Type
 
 ---
 
+# Example Output:
 ## Features
 
 ### Onboarding & Personalization
@@ -74,6 +75,7 @@ src/
 
 ---
 
+# Input
 ## Getting Started
 
 1. **Clone the repo**
@@ -91,6 +93,8 @@ src/
     ```bash
     cp example.env .env
     ```
+    Follow the instructions to request access to the key:
+   👉 [Request Access via Google Doc](https://docs.google.com/document/d/1Am2464__TcCagisOEWl6KscyesZszOzOqspMmRVvg-g/edit?usp=sharing)
 
 4. **Run the app**
     ```bash
@@ -112,3 +116,38 @@ src/
 ## License
 
 MIT 
+
+## 🔐 API Key Access
+
+To use GPT-based features, you need an API key.
+
+We **do not expose our key publicly**. If you want to run this project locally:
+
+1. Open `.env.example`
+2. Follow the instructions to request access to the key:
+   👉 [Request Access via Google Doc](https://docs.google.com/document/d/1Am2464__TcCagisOEWl6KscyesZszOzOqspMmRVvg-g/edit?usp=sharing)
+
+After approval, put the key in a new `.env` file like this:
+
+```env
+# Financial Data API Key (Financial Modeling Prep)
+VITE_FMP_API_KEY=<YOUR_FMP_API_KEY>
+VITE_NEWS_API_KEY=<YOUR_NEWS_API_KEY>
+
+# DynamoDB Table Names
+VITE_DYNAMODB_TABLE_NAME=Investments
+VITE_DYNAMODB_WATCHLIST_TABLE_NAME=Watchlist
+
+# AWS Region and Credentials
+VITE_AWS_REGION=us-east-2
+VITE_AWS_ACCESS_KEY_ID=<YOUR_AWS_ACCESS_KEY_ID>
+VITE_AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
+
+# Cognito Configuration
+VITE_COGNITO_USER_POOL_ID=<YOUR_COGNITO_USER_POOL_ID>
+VITE_COGNITO_WEB_CLIENT_ID=<YOUR_COGNITO_WEB_CLIENT_ID>
+VITE_COGNITO_IDENTITY_POOL_ID=<YOUR_COGNITO_IDENTITY_POOL_ID>
+
+# OpenAI API Key
+VITE_OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
+``` 

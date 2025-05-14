@@ -78,7 +78,7 @@ interface StockScore {
 }
 
 const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY
-const NEWS_API_KEY = '4a44dc5b6b314553a0aed659bacdec3b'
+const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY
 const CACHE_DURATION = 1000 * 5 // 5-second cache duration for testing
 const REPORT_QUEUE_KEY = 'stock_report_queue'
 const REPORT_STORAGE_KEY = 'stock_reports'
