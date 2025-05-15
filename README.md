@@ -7,6 +7,8 @@ A modern AI-powered investment assistant web application, built with React, Type
 ---
 
 # Example Output:
+![image](https://github.com/user-attachments/assets/ec28ad96-46fa-4703-afa6-dea9ce1bf942)
+
 ## Features
 
 ### Onboarding & Personalization
@@ -108,8 +110,6 @@ src/
     ```bash
     npx jest
     ```
-![image](https://github.com/user-attachments/assets/729f91aa-086b-4d16-b835-54f27709f0e7)
-
 
 ---
 
