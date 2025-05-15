@@ -105,7 +105,7 @@ src/
     npx jest
     ```
 ---
-# Example Test Output:
+## Example Test Output:
 ![image](https://github.com/user-attachments/assets/ec28ad96-46fa-4703-afa6-dea9ce1bf942)
 
 ## Customization
