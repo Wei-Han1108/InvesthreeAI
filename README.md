@@ -108,6 +108,7 @@ src/
     ```bash
     npx jest
     ```
+![image](https://github.com/user-attachments/assets/729f91aa-086b-4d16-b835-54f27709f0e7)
 
 
 ---
