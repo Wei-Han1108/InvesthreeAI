@@ -5,10 +5,6 @@ A modern AI-powered investment assistant web application, built with React, Type
 
 
 ---
-
-# Example Output:
-![image](https://github.com/user-attachments/assets/ec28ad96-46fa-4703-afa6-dea9ce1bf942)
-
 ## Features
 
 ### Onboarding & Personalization
@@ -78,8 +74,6 @@ src/
 - **Build Tools**: Vite, ESLint, PostCSS
 
 ---
-
-# Input
 ## Getting Started
 
 1. **Clone the repo**
@@ -110,8 +104,9 @@ src/
     ```bash
     npx jest
     ```
-
 ---
+# Example Test Output:
+![image](https://github.com/user-attachments/assets/ec28ad96-46fa-4703-afa6-dea9ce1bf942)
 
 ## Customization
 
@@ -120,10 +115,6 @@ src/
 - Add new features or pages in `src/pages/`.
 
 ---
-
-## License
-
-MIT 
 
 ## 🔐 API Key Access
 
